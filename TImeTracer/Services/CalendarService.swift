@@ -7,14 +7,46 @@ class CalendarService: ObservableObject {
     @Published var currentSession: TimeSession?
     
     init() {
-        requestAccess()
+        let status = EKEventStore.authorizationStatus(for: .event)
+        
+        switch status {
+        case .notDetermined:
+            requestAccess()
+        case .authorized, .fullAccess, .writeOnly:
+            loadCalendars()
+        case .denied, .restricted:
+            break
+        @unknown default:
+            break
+        }
     }
     
     func requestAccess() {
-        eventStore.requestAccess(to: .event) { [weak self] granted, error in
-            DispatchQueue.main.async {
-                if granted {
-                    self?.loadCalendars()
+        if #available(iOS 17.0, *) {
+            Task {
+                do {
+                    let granted = try await eventStore.requestFullAccessToEvents()
+                    await MainActor.run {
+                        if granted {
+                            self.loadCalendars()
+                        }
+                    }
+                } catch {
+                    eventStore.requestFullAccessToEvents { [weak self] granted, error in
+                        DispatchQueue.main.async {
+                            if granted {
+                                self?.loadCalendars()
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            eventStore.requestAccess(to: .event) { [weak self] granted, error in
+                DispatchQueue.main.async {
+                    if granted {
+                        self?.loadCalendars()
+                    }
                 }
             }
         }
@@ -22,6 +54,7 @@ class CalendarService: ObservableObject {
     
     func loadCalendars() {
         let ekCalendars = eventStore.calendars(for: .event)
+        
         calendars = ekCalendars.map { calendar in
             CalendarInfo(
                 id: calendar.calendarIdentifier,
