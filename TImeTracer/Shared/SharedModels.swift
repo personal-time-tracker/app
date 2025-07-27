@@ -1,5 +1,6 @@
 import Foundation
 
+// Общие модели для основного приложения и виджета
 struct TimeSession: Identifiable, Codable {
     let id = UUID()
     let title: String

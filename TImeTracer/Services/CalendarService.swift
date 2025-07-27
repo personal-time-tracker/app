@@ -92,6 +92,7 @@ class CalendarService: ObservableObject {
         // Если нет календарей с префиксом, не показываем ничего
         guard !timeTrackingCalendars.isEmpty else {
             currentSession = nil
+            AppStorageService.saveCurrentSession(nil)
             return
         }
         
@@ -120,6 +121,9 @@ class CalendarService: ObservableObject {
         } else {
             currentSession = nil
         }
+        
+        // Сохраняем для виджета
+        AppStorageService.saveCurrentSession(currentSession)
     }
     
     func startNewSession(title: String, calendarId: String) {
