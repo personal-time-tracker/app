@@ -28,6 +28,10 @@ struct ActivitySelectionView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     
+                    Text("Доступны только календари с эмодзи ⏱️ в названии")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
                     Button(action: {
                         showingCalendarPicker = true
                     }) {
@@ -52,6 +56,27 @@ struct ActivitySelectionView: View {
                 }
                 
                 Spacer()
+                
+                // Сообщение если нет календарей
+                if calendarService.calendars.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "calendar.badge.exclamationmark")
+                            .font(.title2)
+                            .foregroundColor(.orange)
+                        
+                        Text("Нет календарей для трекинга")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        Text("Создайте календарь с эмодзи ⏱️ в названии")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                }
                 
                 // Кнопка начала
                 Button(action: startActivity) {

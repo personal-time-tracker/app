@@ -55,7 +55,12 @@ class CalendarService: ObservableObject {
     func loadCalendars() {
         let ekCalendars = eventStore.calendars(for: .event)
         
-        calendars = ekCalendars.map { calendar in
+        // Фильтруем только календари с эмодзи ⏱️ в названии
+        let filteredCalendars = ekCalendars.filter { calendar in
+            calendar.title.contains("⏱️")
+        }
+        
+        calendars = filteredCalendars.map { calendar in
             CalendarInfo(
                 id: calendar.calendarIdentifier,
                 title: calendar.title,
@@ -131,10 +136,15 @@ class CalendarService: ObservableObject {
     }
     
     func getSessions(from startDate: Date, to endDate: Date) -> [TimeSession] {
+        // Получаем только календари с эмодзи ⏱️
+        let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
+            calendar.title.contains("⏱️")
+        }
+        
         let predicate = eventStore.predicateForEvents(
             withStart: startDate,
             end: endDate,
-            calendars: nil
+            calendars: timeTrackingCalendars
         )
         
         let events = eventStore.events(matching: predicate)
