@@ -68,6 +68,8 @@ struct ContentView: View {
         }
         .onAppear {
             setupNotifications()
+            // Обновляем текущую сессию при появлении экрана
+            calendarService.loadCurrentSession()
         }
     }
     
