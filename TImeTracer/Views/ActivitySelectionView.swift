@@ -28,7 +28,7 @@ struct ActivitySelectionView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     
-                    Text("Доступны только календари с эмодзи ⏱️ в названии")
+                    Text("Доступны только календари с префиксом \"\(AppSettings.shared.calendarPrefix)\" в названии")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -68,7 +68,7 @@ struct ActivitySelectionView: View {
                             .font(.headline)
                             .foregroundColor(.primary)
                         
-                        Text("Создайте календарь с эмодзи ⏱️ в названии")
+                        Text("Создайте календарь с префиксом \"\(AppSettings.shared.calendarPrefix)\" в названии")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)

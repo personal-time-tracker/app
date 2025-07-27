@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var calendarService = CalendarService()
     @State private var selectedTab = 0
+    @State private var showingSettings = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -32,7 +33,7 @@ struct ContentView: View {
                     
                     // Кнопка настроек
                     Button(action: {
-                        // TODO: Настройки
+                        showingSettings = true
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
@@ -70,6 +71,9 @@ struct ContentView: View {
             setupNotifications()
             // Обновляем текущую сессию при появлении экрана
             calendarService.loadCurrentSession()
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
     

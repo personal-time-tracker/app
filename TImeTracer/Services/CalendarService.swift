@@ -1,10 +1,13 @@
 import Foundation
 import EventKit
+import Combine
 
 class CalendarService: ObservableObject {
     private let eventStore = EKEventStore()
     @Published var calendars: [CalendarInfo] = []
     @Published var currentSession: TimeSession?
+    
+    private let settings = AppSettings.shared
     
     init() {
         let status = EKEventStore.authorizationStatus(for: .event)
@@ -19,6 +22,13 @@ class CalendarService: ObservableObject {
             break
         @unknown default:
             break
+        }
+        
+        // Слушаем изменения настроек
+        settings.objectWillChange.sink { [weak self] in
+            self?.objectWillChange.send()
+            self?.loadCalendars()
+            self?.loadCurrentSession()
         }
     }
     
@@ -59,9 +69,9 @@ class CalendarService: ObservableObject {
     func loadCalendars() {
         let ekCalendars = eventStore.calendars(for: .event)
         
-        // Фильтруем только календари с эмодзи ⏱️ в названии
+        // Фильтруем календари по настраиваемому префиксу
         let filteredCalendars = ekCalendars.filter { calendar in
-            calendar.title.contains("⏱️")
+            calendar.title.contains(settings.calendarPrefix)
         }
         
         calendars = filteredCalendars.map { calendar in
@@ -76,10 +86,10 @@ class CalendarService: ObservableObject {
     func loadCurrentSession() {
         let now = Date()
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
-            calendar.title.contains("⏱️")
+            calendar.title.contains(settings.calendarPrefix)
         }
         
-        // Если нет календарей с эмодзи, не показываем ничего
+        // Если нет календарей с префиксом, не показываем ничего
         guard !timeTrackingCalendars.isEmpty else {
             currentSession = nil
             return
@@ -170,9 +180,9 @@ class CalendarService: ObservableObject {
     }
     
     func getSessions(from startDate: Date, to endDate: Date) -> [TimeSession] {
-        // Получаем только календари с эмодзи ⏱️
+        // Получаем только календари с настраиваемым префиксом
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
-            calendar.title.contains("⏱️")
+            calendar.title.contains(settings.calendarPrefix)
         }
         
         let predicate = eventStore.predicateForEvents(
