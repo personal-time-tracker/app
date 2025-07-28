@@ -19,7 +19,7 @@ struct DurationPickerView: View {
 
             // Пикер для минут
             Picker("Минуты", selection: $minutes) {
-                ForEach(0..<60) { minute in
+                ForEach(stride(from: 0, to: 60, by: 5).map { $0 }, id: \.self) { minute in
                     Text("\(minute) мин").tag(minute)
                 }
             }
