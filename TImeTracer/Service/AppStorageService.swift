@@ -8,7 +8,7 @@ struct AppStorageService {
     @AppStorage("sessionHistory", store: UserDefaults(suiteName: "group.com.timetracer.app"))
     private static var sessionHistoryData: Data?
 
-    static func saveCurrentSession(_ session: TimeSession?) {
+    static func saveCurrentActivity(_ session: TimeSession?) {
         if let session = session {
             let encoder = JSONEncoder()
             if let encoded = try? encoder.encode(session) {

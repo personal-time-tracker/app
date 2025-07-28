@@ -58,7 +58,7 @@ struct TImeTracerApp: App {
 
         let operation = BlockOperation {
             let calendarService = CalendarService()
-            calendarService.loadCurrentSession() // Обновляем данные
+            calendarService.loadCurrentActivity() // Обновляем данные
             print("Background refresh completed")
             task.setTaskCompleted(success: true)
         }

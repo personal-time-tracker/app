@@ -18,11 +18,20 @@ struct TrackingView: View {
     var body: some View {
         VStack {
             // Виджет текущего занятия
-            CurrentActivityWidget(
-                currentSession: $vm.currentSession,
+            CurrentActivityWidgetView(
+                currentActivity: $vm.currentActivity,
                 isShowNewSessionSheet: $vm.isShowNewSessionSheet
             )
             .padding()
+            
+            if vm.currentActivity == nil {
+                // Виджет последнего занятия
+                PreviousActivityWidgetView(
+                    previousActivity: $vm.previousActivity
+                )
+                .padding()
+            }
+            
             Spacer()
         }
         .navigationTitle("Учет времени")
@@ -43,7 +52,7 @@ struct TrackingView: View {
         }
         .background(Color(.systemGroupedBackground))
         .sheet(isPresented: $vm.isShowNewSessionSheet) {
-            ActivitySelectionView()
+            CreateActivityView()
         }
     }
 }

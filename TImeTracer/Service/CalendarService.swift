@@ -10,7 +10,8 @@ class CalendarService {
     private let eventStore = EKEventStore()
     
     var calendars: [CalendarInfo] = []
-    var currentSession: TimeSession?
+    var currentActivity: TimeSession?
+    var previousActivity: TimeSession?
     
     @ObservationIgnored
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
@@ -23,7 +24,7 @@ class CalendarService {
             requestAccess()
         case .authorized, .fullAccess, .writeOnly:
             loadCalendars()
-            loadCurrentSession()
+            loadCurrentActivity()
         case .denied, .restricted:
             break
         @unknown default:
@@ -39,7 +40,7 @@ class CalendarService {
                     await MainActor.run {
                         if granted {
                             self.loadCalendars()
-                            self.loadCurrentSession()
+                            self.loadCurrentActivity()
                         }
                     }
                 } catch {
@@ -47,7 +48,7 @@ class CalendarService {
                         DispatchQueue.main.async {
                             if granted {
                                 self?.loadCalendars()
-                                self?.loadCurrentSession()
+                                self?.loadCurrentActivity()
                             }
                         }
                     }
@@ -58,7 +59,7 @@ class CalendarService {
                 DispatchQueue.main.async {
                     if granted {
                         self?.loadCalendars()
-                        self?.loadCurrentSession()
+                        self?.loadCurrentActivity()
                     }
                 }
             }
@@ -102,7 +103,7 @@ class CalendarService {
         }
     }
     
-    func loadCurrentSession() {
+    func loadCurrentActivity() {
         let now = Date()
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
             calendar.title.contains(calendarPrefix)
@@ -110,8 +111,8 @@ class CalendarService {
         
         // Если нет календарей с префиксом, не показываем ничего
         guard !timeTrackingCalendars.isEmpty else {
-            currentSession = nil
-            AppStorageService.saveCurrentSession(nil)
+            currentActivity = nil
+            AppStorageService.saveCurrentActivity(nil)
             return
         }
         
@@ -130,7 +131,7 @@ class CalendarService {
         }
         
         if let event = currentEvent {
-            currentSession = TimeSession(
+            currentActivity = TimeSession(
                 id: event.eventIdentifier, // Сохраняем ID
                 title: event.title,
                 calendarName: event.calendar.title,
@@ -139,11 +140,50 @@ class CalendarService {
                 category: event.calendar.title
             )
         } else {
-            currentSession = nil
+            currentActivity = nil
         }
         
         // Сохраняем для виджета
-        AppStorageService.saveCurrentSession(currentSession)
+        AppStorageService.saveCurrentActivity(currentActivity)
+        
+        // После загрузки текущей сессии, загружаем последнюю завершенную
+        loadPreviousActivity()
+    }
+    
+    func loadPreviousActivity() {
+        let now = Date()
+        let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
+            calendar.title.contains(calendarPrefix)
+        }
+        
+        guard !timeTrackingCalendars.isEmpty else {
+            previousActivity = nil
+            return
+        }
+        
+        // Ищем события за последний день, чтобы найти последнее
+        let predicate = eventStore.predicateForEvents(
+            withStart: now.addingTimeInterval(-24 * 3600), // День назад
+            end: now, // До текущего момента
+            calendars: timeTrackingCalendars
+        )
+        
+        let events = eventStore.events(matching: predicate)
+            .filter { $0.endDate != nil && $0.endDate! <= now } // Только завершенные
+            .sorted(by: { $0.endDate! > $1.endDate! }) // Сортируем по дате окончания, самые новые вверху
+            
+        if let lastEvent = events.first {
+            previousActivity = TimeSession(
+                id: lastEvent.eventIdentifier,
+                title: lastEvent.title,
+                calendarName: lastEvent.calendar.title,
+                startTime: lastEvent.startDate,
+                endTime: lastEvent.endDate,
+                category: lastEvent.calendar.title
+            )
+        } else {
+            previousActivity = nil
+        }
     }
     
     func startNewSession(title: String, calendarId: String, duration: TimeInterval) {
@@ -151,24 +191,40 @@ class CalendarService {
         let newSessionStartDate = Date()
         
         // Завершаем текущую сессию, устанавливая ее конец точно в момент начала новой
-        endCurrentSession(endDate: newSessionStartDate)
+        endCurrentActivity(endDate: newSessionStartDate)
         
         // Создаем событие в календаре, начиная с того же самого момента
         createCalendarEvent(title: title, calendarId: calendarId, duration: duration, startDate: newSessionStartDate)
         
         // Перезагружаем текущую сессию из календаря
-        loadCurrentSession()
+        loadCurrentActivity()
     }
     
-    func endCurrentSession(endDate: Date) {
-        // Убеждаемся, что есть сессия и у нее есть ID
-        guard let session = currentSession else { return }
+    func endCurrentActivity(endDate: Date) {
+        guard let session = currentActivity else { return }
         
-        // Обновляем событие в календаре по его ID
         updateCalendarEvent(eventId: session.id, newEndDate: endDate)
         
-        // Перезагружаем текущую сессию из календаря
-        loadCurrentSession()
+        loadCurrentActivity()
+    }
+
+    func extendSession(eventId: String, by timeInterval: TimeInterval) {
+        guard let event = eventStore.event(withIdentifier: eventId) else {
+            print("Ошибка: не удалось найти событие с ID \(eventId) для продления")
+            return
+        }
+        
+        guard let currentEndDate = event.endDate else { return }
+        
+        event.endDate = currentEndDate.addingTimeInterval(timeInterval)
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            // После продления нужно обновить состояние
+            loadPreviousActivity()
+        } catch {
+            print("Ошибка продления события: \(error)")
+        }
     }
     
     private func createCalendarEvent(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {

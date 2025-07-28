@@ -1,9 +1,9 @@
 import SwiftUI
 import Factory
 
-struct ActivitySelectionView: View {
+struct CreateActivityView: View {
     
-    @State private var vm = ActivitySelectionViewModel()
+    @State private var vm = CreateActivityViewModel()
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -80,5 +80,5 @@ struct ActivitySelectionView: View {
 }
 
 #Preview {
-    ActivitySelectionView()
+    CreateActivityView()
 } 

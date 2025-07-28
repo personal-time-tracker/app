@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct CurrentActivityWidget: View {
+struct CurrentActivityWidgetView: View {
         
-    @Binding var currentSession: TimeSession?
+    @Binding var currentActivity: TimeSession?
     @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
@@ -18,7 +18,7 @@ struct CurrentActivityWidget: View {
             }
             
             // Текущее занятие
-            if let currentSession = currentSession {
+            if let currentSession = currentActivity {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(currentSession.title)
                         .font(.title2)
@@ -99,8 +99,8 @@ struct CurrentActivityWidget: View {
 
 #Preview("With data") {
     VStack {
-        CurrentActivityWidget(
-            currentSession: .constant(TimeSession(
+        CurrentActivityWidgetView(
+            currentActivity: .constant(TimeSession(
                 id: UUID().uuidString,
                 title: "Занятие",
                 calendarName: "⏱️ Работа",
@@ -118,8 +118,8 @@ struct CurrentActivityWidget: View {
 
 #Preview("Without data") {
     VStack {
-        CurrentActivityWidget(
-            currentSession: .constant(nil),
+        CurrentActivityWidgetView(
+            currentActivity: .constant(nil),
             isShowNewSessionSheet: .constant(true)
         )
         Spacer()

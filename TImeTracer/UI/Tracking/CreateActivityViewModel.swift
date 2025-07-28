@@ -3,7 +3,7 @@ import Factory
 
 @MainActor
 @Observable
-class ActivitySelectionViewModel {
+class CreateActivityViewModel {
     
     @ObservationIgnored
     @Injected(\.calendarService) private var calendarService

@@ -14,10 +14,12 @@ class TrackingViewModel {
     @ObservationIgnored
     @Injected(\.calendarService) private var calendarService
     
-    var currentSession: TimeSession?
+    var currentActivity: TimeSession?
+    var previousActivity: TimeSession?
     var isShowNewSessionSheet: Bool = false
         
     func load() async throws {
-        currentSession = calendarService.currentSession
+        currentActivity = calendarService.currentActivity
+        previousActivity = calendarService.previousActivity
     }
 }
