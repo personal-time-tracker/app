@@ -136,6 +136,7 @@ struct CurrentActivityWidgetView: View {
             currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Занятие",
+                calendarId: UUID().uuidString,
                 calendarName: "⏱️ Работа",
                 startTime: Date.now.addingTimeInterval(-3600),
                 endTime: Date.now,

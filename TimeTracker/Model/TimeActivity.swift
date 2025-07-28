@@ -3,6 +3,7 @@ import Foundation
 struct TimeActivity: Identifiable, Codable {
     let id: String
     var title: String
+    var calendarId: String
     var calendarName: String
     var startTime: Date
     var endTime: Date

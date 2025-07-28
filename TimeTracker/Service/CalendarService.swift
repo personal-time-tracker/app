@@ -142,6 +142,7 @@ class CalendarService {
             currentActivity = TimeActivity(
                 id: event.eventIdentifier, // Сохраняем ID
                 title: event.title,
+                calendarId: event.calendar.calendarIdentifier,
                 calendarName: event.calendar.title,
                 startTime: event.startDate,
                 endTime: event.endDate,
@@ -184,6 +185,7 @@ class CalendarService {
             previousActivity = TimeActivity(
                 id: lastEvent.eventIdentifier,
                 title: lastEvent.title,
+                calendarId: lastEvent.calendar.calendarIdentifier,
                 calendarName: lastEvent.calendar.title,
                 startTime: lastEvent.startDate,
                 endTime: lastEvent.endDate,
@@ -211,7 +213,7 @@ class CalendarService {
     func endCurrentActivity(endDate: Date) {
         guard let activity = currentActivity else { return }
         
-        updateCalendarEvent(eventId: activity.id, newEndDate: endDate)
+        updateCalendarEvent(eventId: activity.id.components(separatedBy: "_part").first ?? "", newEndDate: endDate)
         
         loadCurrentActivity()
     }
@@ -294,7 +296,7 @@ class CalendarService {
         event.startDate = activity.startTime
         event.endDate = activity.endTime
         
-        if let calendar = eventStore.calendar(withIdentifier: activity.calendarName) {
+        if let calendar = eventStore.calendar(withIdentifier: activity.calendarId) {
             event.calendar = calendar
         }
         
@@ -333,7 +335,7 @@ class CalendarService {
         )
         
         let events = eventStore.events(matching: predicate)
-        var resultingSessions: [TimeActivity] = []
+        var resultingActivities: [TimeActivity] = []
 
         for event in events {
             guard let eventEndDate = event.endDate else { continue } // Пропускаем сессии без времени окончания
@@ -344,9 +346,10 @@ class CalendarService {
             // Если сессия не пересекает полночь, просто добавляем ее
             if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
                 if eventStartDate != eventEndDate { // Исключаем события с нулевой длительностью на границе дня
-                    resultingSessions.append(TimeActivity(
+                    resultingActivities.append(TimeActivity(
                         id: event.eventIdentifier,
                         title: event.title,
+                        calendarId: event.calendar.calendarIdentifier,
                         calendarName: event.calendar.title,
                         startTime: eventStartDate,
                         endTime: eventEndDate,
@@ -363,15 +366,16 @@ class CalendarService {
                     let endOfThisSegment = min(startOfNextDay, eventEndDate)
 
                     if currentDate < endOfThisSegment { // Добавляем сегмент, только если он имеет продолжительность
-                        let sessionPart = TimeActivity(
+                        let activityPart = TimeActivity(
                             id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
                             title: event.title,
+                            calendarId: event.calendar.calendarIdentifier,
                             calendarName: event.calendar.title,
                             startTime: currentDate,
                             endTime: endOfThisSegment,
                             category: event.calendar.title
                         )
-                        resultingSessions.append(sessionPart)
+                        resultingActivities.append(activityPart)
                     }
 
                     currentDate = endOfThisSegment
@@ -380,7 +384,11 @@ class CalendarService {
             }
         }
         
-        return resultingSessions
+        return resultingActivities
+    }
+    
+    func getCalendarTitle(by id: String) -> String {
+        return eventStore.calendar(withIdentifier: id)?.title ?? ""
     }
     
     // MARK: - Calendar Synchronization

@@ -17,7 +17,7 @@ struct EditActivityView: View {
             }
             
             Section("Календарь") {
-                Picker("Календарь", selection: $vm.currentActivity.calendarName) {
+                Picker("Календарь", selection: $vm.currentActivity.calendarId) {
                     ForEach(vm.calendars) { calendar in
                         Text(calendar.title.replacingOccurrences(of: "⏱️ ", with: "")).tag(calendar.id)
                     }

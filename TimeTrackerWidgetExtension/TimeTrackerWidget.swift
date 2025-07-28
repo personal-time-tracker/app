@@ -91,6 +91,7 @@ struct TimeTracerTimelineProvider: TimelineProvider {
             currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Работа",
+                calendarId: UUID().uuidString,
                 calendarName: "test",
                 startTime: Date.now.addingTimeInterval(-3600),
                 endTime: Date.now,
@@ -130,6 +131,7 @@ struct TimeTracerTimelineProvider: TimelineProvider {
         currentActivity: TimeActivity(
             id: UUID().uuidString,
             title: "Работа",
+            calendarId: UUID().uuidString,
             calendarName: "test",
             startTime: Date.now.addingTimeInterval(-3600),
             endTime: Date.now,
