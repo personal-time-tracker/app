@@ -303,7 +303,7 @@ class CalendarService {
     }
     
     func updateActivity(_ activity: TimeActivity) {
-        guard let event = eventStore.event(withIdentifier: activity.id.components(separatedBy: "_part").first ?? "") else {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
             print("Ошибка: не удалось найти событие с ID \(activity.id) для обновления")
             return
         }
@@ -325,7 +325,7 @@ class CalendarService {
     }
     
     func deleteActivity(_ activity: TimeActivity) {
-        guard let event = eventStore.event(withIdentifier: activity.id.components(separatedBy: "_part").first ?? "") else {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
             print("Ошибка: не удалось найти событие с ID \(activity.id) для удаления")
             return
         }
@@ -401,6 +401,26 @@ class CalendarService {
         }
         
         return resultingActivities
+    }
+    
+    func getActivity(by id: String) -> TimeActivity? {
+        // Извлекаем оригинальный ID, отбрасывая суффикс "_part"
+        let originalEventId = id.components(separatedBy: "_part").first ?? id
+        
+        guard let event = eventStore.event(withIdentifier: originalEventId) else {
+            return nil
+        }
+        
+        // Возвращаем полный, неразрезанный TimeActivity
+        return TimeActivity(
+            id: event.eventIdentifier,
+            title: event.title,
+            calendarId: event.calendar.calendarIdentifier,
+            calendarName: event.calendar.title,
+            startTime: event.startDate,
+            endTime: event.endDate,
+            category: event.calendar.title
+        )
     }
     
     func getUniqueRecentActivities() -> [TimeActivity] {

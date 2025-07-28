@@ -12,8 +12,8 @@ class EditActivityViewModel {
     @ObservationIgnored
     @Injected(\.calendarService) private var calendarService
     
-    var currentActivity: TimeActivity
-    private let oldActivity: TimeActivity
+    var currentActivity: TimeActivity?
+    private var oldActivity: TimeActivity?
     let mode: EditActivityMode
     
     var calendars: [CalendarInfo] {
@@ -21,16 +21,22 @@ class EditActivityViewModel {
     }
     
     init(activity: TimeActivity, mode: EditActivityMode) {
-        self.currentActivity = activity
-        self.oldActivity = activity
         self.mode = mode
+        
+        // "Склеиваем" событие: по ID "осколка" загружаем полную версию
+        if let fullActivity = calendarService.getActivity(by: activity.id) {
+            self.currentActivity = fullActivity
+            self.oldActivity = fullActivity
+        }
     }
     
     func save() {
-        calendarService.updateActivity(currentActivity)
+        guard let activity = currentActivity else { return }
+        calendarService.updateActivity(activity)
     }
     
     func delete() {
-        calendarService.deleteActivity(oldActivity)
+        guard let activity = oldActivity else { return }
+        calendarService.deleteActivity(activity)
     }
 } 

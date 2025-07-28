@@ -11,39 +11,58 @@ struct EditActivityView: View {
     }
     
     var body: some View {
-        Form {
-            Section("Название") {
-                TextField("Название", text: $vm.currentActivity.title)
-            }
-            
-            Section("Календарь") {
-                Picker("Календарь", selection: $vm.currentActivity.calendarId) {
-                    ForEach(vm.calendars) { calendar in
-                        Text(calendar.title.replacingOccurrences(of: "⏱️ ", with: "")).tag(calendar.id)
+        NavigationStack {
+            if let activity = vm.currentActivity {
+                Form {
+                    Section("Название") {
+                        TextField("Название", text:Binding(
+                            get: { activity.title },
+                            set: { vm.currentActivity?.title = $0 }
+                        ))
+                    }
+                    
+                    Section("Календарь") {
+                        Picker("Календарь", selection: Binding(
+                            get: { activity.calendarId },
+                            set: { vm.currentActivity?.calendarId = $0 }
+                        )) {
+                            ForEach(vm.calendars) { calendar in
+                                Text(calendar.title.replacingOccurrences(of: "⏱️ ", with: "")).tag(calendar.id)
+                            }
+                        }
+                    }
+                    
+                    Section("Время") {
+                        DatePicker("Начало", selection: Binding(
+                            get: { activity.startTime },
+                            set: { vm.currentActivity?.startTime = $0 }
+                        ), displayedComponents: [.hourAndMinute, .date])
+                        DatePicker("Окончание", selection: Binding(
+                            get: { activity.endTime },
+                            set: { vm.currentActivity?.endTime = $0 }
+                        ), displayedComponents: [.hourAndMinute, .date])
+                    }
+                    
+                    Section {
+                        Button("Сохранить") {
+                            vm.save()
+                            dismiss()
+                        }
+                    }
+                    
+                    Section {
+                        Button("Удалить", role: .destructive) {
+                            vm.delete()
+                            dismiss()
+                        }
                     }
                 }
-            }
-            
-            Section("Время") {
-                DatePicker("Начало", selection: $vm.currentActivity.startTime, displayedComponents: [.hourAndMinute, .date])
-                DatePicker("Окончание", selection: $vm.currentActivity.endTime, displayedComponents: [.hourAndMinute, .date])
-            }
-            
-            Section {
-                Button("Сохранить") {
-                    vm.save()
-                    dismiss()
-                }
-            }
-            
-            Section {
-                Button("Удалить", role: .destructive) {
-                    vm.delete()
-                    dismiss()
-                }
+                .navigationTitle("Изменить активность")
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
+                ProgressView()
+                    .navigationTitle("Загрузка...")
             }
         }
-        .navigationTitle("Изменить активность")
-        .navigationBarTitleDisplayMode(.inline)
     }
 } 
