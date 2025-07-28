@@ -19,10 +19,10 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section("Префикс календарей") {
-                    Text("Приложение будет работать только с календарями, содержащими выбранный префикс в названии")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                Section(
+                    header: Text("Префикс календарей"),
+                    footer: Text("Приложение будет работать только с календарями, содержащими выбранный префикс в названии")
+                ) {
                     
                     HStack {
                         Text("Текущий префикс")
@@ -32,16 +32,6 @@ struct SettingsView: View {
                         }
                         .foregroundColor(.blue)
                     }
-                }
-                
-                Section("Примеры") {
-                    Text("С префиксом \"\(calendarPrefix)\" будут учитываться календари с любым из следующих форматов:")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("\(calendarPrefix) Работа")
-                    Text("Учеба \(calendarPrefix)") 
-                    Text("Тайм \(calendarPrefix) Менеджмент")
                 }
             }
             .navigationTitle("Настройки")
