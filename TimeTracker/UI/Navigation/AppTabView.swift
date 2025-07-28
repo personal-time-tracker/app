@@ -35,6 +35,12 @@ struct AppTabView: View {
                 }
                 .tag(2)
             
+            HistoryTab()
+                .tabItem {
+                    Image(systemName: "calendar")
+                    Text("История")
+                }
+                .tag(3)
         }
     }
     
