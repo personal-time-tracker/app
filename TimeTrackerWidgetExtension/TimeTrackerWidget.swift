@@ -30,16 +30,16 @@ struct TimeTracerWidgetView: View {
             Spacer()
             
             // Текущее занятие
-            if let currentSession = entry.currentSession {
+            if let currentActivity = entry.currentActivity {
                 VStack(spacing: 4) {
-                    Text(currentSession.title)
+                    Text(currentActivity.title)
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                     
-                    Text(formatDuration(currentSession.duration))
+                    Text(formatDuration(currentActivity.duration))
                         .font(.caption)
                         .foregroundColor(.blue)
                         .padding(.horizontal, 8)
@@ -81,14 +81,14 @@ struct TimeTracerWidgetView: View {
 
 struct TimeTracerTimelineEntry: TimelineEntry {
     let date: Date
-    let currentSession: TimeSession?
+    let currentActivity: TimeActivity?
 }
 
 struct TimeTracerTimelineProvider: TimelineProvider {
     func placeholder(in context: Context) -> TimeTracerTimelineEntry {
         TimeTracerTimelineEntry(
             date: Date(),
-            currentSession: TimeSession(
+            currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Работа",
                 calendarName: "test",
@@ -100,17 +100,17 @@ struct TimeTracerTimelineProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (TimeTracerTimelineEntry) -> ()) {
-        let entry = TimeTracerTimelineEntry(date: Date(), currentSession: AppStorageService.getCurrentSession())
+        let entry = TimeTracerTimelineEntry(date: Date(), currentActivity: AppStorageService.getCurrentActivity())
         completion(entry)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TimeTracerTimelineEntry>) -> ()) {
         // Получаем текущую сессию
-        let currentSession = AppStorageService.getCurrentSession()
+        let currentSession = AppStorageService.getCurrentActivity()
         
         let entry = TimeTracerTimelineEntry(
             date: Date(),
-            currentSession: currentSession
+            currentActivity: currentSession
         )
         
         // Обновляем каждые 5 секунд
@@ -124,10 +124,10 @@ struct TimeTracerTimelineProvider: TimelineProvider {
 #Preview(as: .systemSmall) {
     TimeTracerWidget()
 } timeline: {
-    TimeTracerTimelineEntry(date: Date(), currentSession: nil)
+    TimeTracerTimelineEntry(date: Date(), currentActivity: nil)
     TimeTracerTimelineEntry(
         date: Date(),
-        currentSession: TimeSession(
+        currentActivity: TimeActivity(
             id: UUID().uuidString,
             title: "Работа",
             calendarName: "test",

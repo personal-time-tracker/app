@@ -14,11 +14,11 @@ class TrackingViewModel {
     @ObservationIgnored
     @Injected(\.calendarService) var calendarService
     
-    var currentActivity: TimeSession? {
+    var currentActivity: TimeActivity? {
         return calendarService.currentActivity
     }
 
-    var previousActivity: TimeSession? {
+    var previousActivity: TimeActivity? {
         return calendarService.previousActivity
     }
     

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PreviousActivityWidgetView: View {
     
-    var previousActivity: TimeSession?
+    var previousActivity: TimeActivity?
     
     @State private var vm = PreviousActivityWidgetViewModel()
 

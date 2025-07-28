@@ -10,26 +10,28 @@ struct HistoryView: View {
             List {
                 ForEach(vm.sortedDates, id: \.self) { date in
                     Section(header: Text(date, style: .date)) {
-                        if let sessions = vm.sessionsByDate[date] {
-                            ForEach(sessions) { session in
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(session.title)
-                                            .font(.headline)
-                                        Text(session.calendarName.replacingOccurrences(of: "\(calendarPrefix)", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                        Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    Spacer()
-                                    VStack(alignment: .trailing) {
-                                        Text(formatDuration(session.duration))
-                                            .font(.headline)
-                                        Text(formatPercentage(session.duration))
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
+                        if let activities = vm.activitiesByDate[date] {
+                            ForEach(activities) { activity in
+                                NavigationLink(destination: EditActivityView(activity: activity)) {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(activity.title)
+                                                .font(.headline)
+                                            Text(activity.calendarName.replacingOccurrences(of: "\(calendarPrefix)", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                            Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        VStack(alignment: .trailing) {
+                                            Text(formatDuration(activity.duration))
+                                                .font(.headline)
+                                            Text(formatPercentage(activity.duration))
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
                                 }
                             }
@@ -39,7 +41,7 @@ struct HistoryView: View {
             }
             .navigationTitle("История")
             .onAppear {
-                vm.fetchSessions()
+                vm.fetchActivities()
             }
         }
     }

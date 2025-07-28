@@ -4,7 +4,7 @@ struct CurrentActivityWidgetView: View {
     
     @State private var vm = CurrentActivityWidgetViewModel()
         
-    var currentActivity: TimeSession?
+    var currentActivity: TimeActivity?
     @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
@@ -133,7 +133,7 @@ struct CurrentActivityWidgetView: View {
 #Preview("With data") {
     VStack {
         CurrentActivityWidgetView(
-            currentActivity: TimeSession(
+            currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Занятие",
                 calendarName: "⏱️ Работа",

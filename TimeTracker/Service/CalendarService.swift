@@ -10,8 +10,8 @@ class CalendarService {
     private let eventStore = EKEventStore()
     
     var calendars: [CalendarInfo] = []
-    var currentActivity: TimeSession?
-    var previousActivity: TimeSession?
+    var currentActivity: TimeActivity?
+    var previousActivity: TimeActivity?
     
     @ObservationIgnored
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
@@ -139,7 +139,7 @@ class CalendarService {
         }
         
         if let event = currentEvent {
-            currentActivity = TimeSession(
+            currentActivity = TimeActivity(
                 id: event.eventIdentifier, // Сохраняем ID
                 title: event.title,
                 calendarName: event.calendar.title,
@@ -181,7 +181,7 @@ class CalendarService {
             .sorted(by: { $0.endDate! > $1.endDate! }) // Сортируем по дате окончания, самые новые вверху
             
         if let lastEvent = events.first {
-            previousActivity = TimeSession(
+            previousActivity = TimeActivity(
                 id: lastEvent.eventIdentifier,
                 title: lastEvent.title,
                 calendarName: lastEvent.calendar.title,
@@ -209,9 +209,9 @@ class CalendarService {
     }
     
     func endCurrentActivity(endDate: Date) {
-        guard let session = currentActivity else { return }
+        guard let activity = currentActivity else { return }
         
-        updateCalendarEvent(eventId: session.id, newEndDate: endDate)
+        updateCalendarEvent(eventId: activity.id, newEndDate: endDate)
         
         loadCurrentActivity()
     }
@@ -284,7 +284,43 @@ class CalendarService {
         }
     }
     
-    func getSessions(from startDate: Date, to endDate: Date) -> [TimeSession] {
+    func updateActivity(_ activity: TimeActivity) {
+        guard let event = eventStore.event(withIdentifier: activity.id.components(separatedBy: "_part").first ?? "") else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для обновления")
+            return
+        }
+        
+        event.title = activity.title
+        event.startDate = activity.startTime
+        event.endDate = activity.endTime
+        
+        if let calendar = eventStore.calendar(withIdentifier: activity.calendarName) {
+            event.calendar = calendar
+        }
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            loadCurrentActivity()
+        } catch {
+            print("Ошибка обновления события: \(error)")
+        }
+    }
+    
+    func deleteActivity(_ activity: TimeActivity) {
+        guard let event = eventStore.event(withIdentifier: activity.id.components(separatedBy: "_part").first ?? "") else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для удаления")
+            return
+        }
+        
+        do {
+            try eventStore.remove(event, span: .thisEvent)
+            loadCurrentActivity()
+        } catch {
+            print("Ошибка удаления события: \(error)")
+        }
+    }
+    
+    func getActivities(from startDate: Date, to endDate: Date) -> [TimeActivity] {
         // Получаем только календари с настраиваемым префиксом
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
             calendar.title.contains(calendarPrefix)
@@ -297,7 +333,7 @@ class CalendarService {
         )
         
         let events = eventStore.events(matching: predicate)
-        var resultingSessions: [TimeSession] = []
+        var resultingSessions: [TimeActivity] = []
 
         for event in events {
             guard let eventEndDate = event.endDate else { continue } // Пропускаем сессии без времени окончания
@@ -308,7 +344,7 @@ class CalendarService {
             // Если сессия не пересекает полночь, просто добавляем ее
             if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
                 if eventStartDate != eventEndDate { // Исключаем события с нулевой длительностью на границе дня
-                    resultingSessions.append(TimeSession(
+                    resultingSessions.append(TimeActivity(
                         id: event.eventIdentifier,
                         title: event.title,
                         calendarName: event.calendar.title,
@@ -327,7 +363,7 @@ class CalendarService {
                     let endOfThisSegment = min(startOfNextDay, eventEndDate)
 
                     if currentDate < endOfThisSegment { // Добавляем сегмент, только если он имеет продолжительность
-                        let sessionPart = TimeSession(
+                        let sessionPart = TimeActivity(
                             id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
                             title: event.title,
                             calendarName: event.calendar.title,
