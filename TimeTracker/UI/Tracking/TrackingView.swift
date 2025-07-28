@@ -11,7 +11,7 @@ import Factory
 struct TrackingView: View {
     
     @State private var vm = TrackingViewModel()
-    @Environment(PathSharedState.self) private var path
+    @Namespace private var animation
     
     @ObservationIgnored
     @Injected(\.alertManager) var alertManager
@@ -21,6 +21,7 @@ struct TrackingView: View {
             VStack(spacing: 10) {
                 // Виджет текущего занятия
                 CurrentActivityWidgetView(
+                    namespace: animation,
                     currentActivity: vm.currentActivity,
                     isShowNewSessionSheet: $vm.isShowNewSessionSheet
                 )
@@ -29,13 +30,15 @@ struct TrackingView: View {
                 if vm.currentActivity == nil {
                     // Виджет последнего занятия
                     PreviousActivityWidgetView(
-                        previousActivity: vm.previousActivity
+                        previousActivity: vm.previousActivity,
+                        namespace: animation
                     )
                     .padding(.horizontal)
                 }
                 
                 Spacer()
             }
+            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: vm.currentActivity)
             .navigationTitle("Учет времени")
             .toolbar{
                 ToolbarItem {

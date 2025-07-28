@@ -3,6 +3,7 @@ import SwiftUI
 struct PreviousActivityWidgetView: View {
     
     var previousActivity: TimeActivity?
+    var namespace: Namespace.ID
     
     @State private var vm = PreviousActivityWidgetViewModel()
 
@@ -31,6 +32,7 @@ struct PreviousActivityWidgetView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .matchedGeometryEffect(id: session.id, in: namespace)
                     
                     // Кнопки для продления и завершения
                     VStack(spacing: 10) {
@@ -96,6 +98,7 @@ struct ExtensionButtonStyle: ButtonStyle {
 // Preview
 struct PreviousActivityWidget_Previews: PreviewProvider {
     static var previews: some View {
+        @Namespace var namespace
         return PreviousActivityWidgetView(
             previousActivity: TimeActivity(
                 id: UUID().uuidString,
@@ -105,7 +108,8 @@ struct PreviousActivityWidget_Previews: PreviewProvider {
                 startTime: Date().addingTimeInterval(-7200),
                 endTime: Date().addingTimeInterval(-3600),
                 category: "Работа"
-            )
+            ),
+            namespace: namespace
         )
             .padding()
             .background(Color(.systemGroupedBackground))

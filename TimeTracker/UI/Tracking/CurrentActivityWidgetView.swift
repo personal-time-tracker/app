@@ -4,6 +4,7 @@ struct CurrentActivityWidgetView: View {
     
     @State private var vm = CurrentActivityWidgetViewModel()
     @State private var isShowingTimePopover = false
+    var namespace: Namespace.ID
         
     var currentActivity: TimeActivity?
     @Binding var isShowNewSessionSheet: Bool
@@ -35,6 +36,7 @@ struct CurrentActivityWidgetView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .matchedGeometryEffect(id: activity.id, in: namespace)
                 
                 // Кнопка действия
                 HStack(spacing: 8) {
@@ -92,8 +94,10 @@ struct CurrentActivityWidgetView: View {
 }
 
 #Preview("With data") {
+    @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
+            namespace: _namespace.wrappedValue,
             currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Занятие",
@@ -112,8 +116,10 @@ struct CurrentActivityWidgetView: View {
 }
 
 #Preview("Without data") {
+    @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
+            namespace: _namespace.wrappedValue,
             currentActivity: nil,
             isShowNewSessionSheet: .constant(true)
         )
