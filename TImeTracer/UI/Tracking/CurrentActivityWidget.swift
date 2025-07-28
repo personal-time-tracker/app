@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CurrentActivityWidgetView: View {
         
-    @Binding var currentActivity: TimeSession?
+    var currentActivity: TimeSession?
     @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
@@ -115,14 +115,14 @@ struct CurrentActivityWidgetView: View {
 #Preview("With data") {
     VStack {
         CurrentActivityWidgetView(
-            currentActivity: .constant(TimeSession(
+            currentActivity: TimeSession(
                 id: UUID().uuidString,
                 title: "Занятие",
                 calendarName: "⏱️ Работа",
                 startTime: Date.now.addingTimeInterval(-3600),
                 endTime: Date.now,
                 category: nil
-            )),
+            ),
             isShowNewSessionSheet: .constant(true)
         )
         Spacer()
@@ -134,7 +134,7 @@ struct CurrentActivityWidgetView: View {
 #Preview("Without data") {
     VStack {
         CurrentActivityWidgetView(
-            currentActivity: .constant(nil),
+            currentActivity: nil,
             isShowNewSessionSheet: .constant(true)
         )
         Spacer()

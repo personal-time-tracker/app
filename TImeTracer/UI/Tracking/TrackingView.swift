@@ -20,7 +20,7 @@ struct TrackingView: View {
             VStack(spacing: 10) {
                 // Виджет текущего занятия
                 CurrentActivityWidgetView(
-                    currentActivity: $vm.currentActivity,
+                    currentActivity: vm.currentActivity,
                     isShowNewSessionSheet: $vm.isShowNewSessionSheet
                 )
                 .padding(.horizontal)
@@ -28,7 +28,7 @@ struct TrackingView: View {
                 if vm.currentActivity == nil {
                     // Виджет последнего занятия
                     PreviousActivityWidgetView(
-                        previousActivity: $vm.previousActivity
+                        previousActivity: vm.previousActivity
                     )
                     .padding(.horizontal)
                 }
@@ -41,14 +41,6 @@ struct TrackingView: View {
                     NavigationLink(value: TrackingTabListRoute.settings) {
                         Image(systemName: "gearshape.fill")
                     }
-                }
-            }
-            .task {
-                do {
-                    // Обновляем текущую сессию при появлении экрана
-                    try await vm.load()
-                } catch {
-                    alertManager.error(error)
                 }
             }
             .sheet(isPresented: $vm.isShowNewSessionSheet) {

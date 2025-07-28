@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PreviousActivityWidgetView: View {
     
-    @Binding var previousActivity: TimeSession?
+    var previousActivity: TimeSession?
     
     @State private var vm = PreviousActivityWidgetViewModel()
 
@@ -102,7 +102,7 @@ struct ExtensionButtonStyle: ButtonStyle {
 struct PreviousActivityWidget_Previews: PreviewProvider {
     static var previews: some View {      
         return PreviousActivityWidgetView(
-            previousActivity: .constant(nil)
+            previousActivity: nil
         )
             .padding()
             .background(Color(.systemGroupedBackground))
