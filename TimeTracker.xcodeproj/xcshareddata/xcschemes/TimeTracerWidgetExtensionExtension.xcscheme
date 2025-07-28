@@ -31,8 +31,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B5E723AC2E35C06A00022C8D"
-               BuildableName = "TImeTracker.app"
-               BlueprintName = "TImeTracker"
+               BuildableName = "TimeTracker.app"
+               BlueprintName = "TimeTracker"
                ReferencedContainer = "container:TImeTracker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -72,8 +72,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5E723AC2E35C06A00022C8D"
-            BuildableName = "TImeTracker.app"
-            BlueprintName = "TImeTracker"
+            BuildableName = "TimeTracker.app"
+            BlueprintName = "TimeTracker"
             ReferencedContainer = "container:TImeTracker.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -108,8 +108,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5E723AC2E35C06A00022C8D"
-            BuildableName = "TImeTracker.app"
-            BlueprintName = "TImeTracker"
+            BuildableName = "TimeTracker.app"
+            BlueprintName = "TimeTracker"
             ReferencedContainer = "container:TImeTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
