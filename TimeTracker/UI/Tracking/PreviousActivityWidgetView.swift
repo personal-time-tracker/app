@@ -11,9 +11,14 @@ struct PreviousActivityWidgetView: View {
         if let session = previousActivity {
             VStack(alignment: .leading, spacing: 12) {
                 // Заголовок
-                Text("Последнее занятие")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                HStack {
+                    Image(systemName: "arrow.backward.circle.fill")
+                        .foregroundColor(.secondary)
+                    Text("Последнее занятие")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Spacer()
+                }
                 
                 // Информация о занятии
                 VStack(alignment: .leading) {
@@ -32,6 +37,9 @@ struct PreviousActivityWidgetView: View {
                 
                 // Кнопки для продления и завершения
                 VStack(spacing: 10) {
+                    
+                    Text("Продолжить и добавить время:")
+                    
                     HStack(spacing: 10) {
                         Button("+5 мин") {
                             vm.extendSession(eventId: session.id, by: 300)
@@ -48,11 +56,12 @@ struct PreviousActivityWidgetView: View {
                         }
                         .buttonStyle(ExtensionButtonStyle())
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                     
                     Button(action: {
                         vm.finishSessionNow(eventId: session.id)
                     }) {
-                        Label("Закончить сейчас", systemImage: "stop.fill")
+                        Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding(10)
@@ -93,8 +102,10 @@ struct ExtensionButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .padding(10)
             .background(Color.accentColor.opacity(0.15))
-            .foregroundColor(.accentColor)
+            .foregroundColor(Color.accentColor)
             .cornerRadius(10)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
 }
 
