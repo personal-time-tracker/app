@@ -25,4 +25,8 @@ class PreviousActivityWidgetViewModel {
             by: duration
         )
     }
+    
+    func finishSessionNow(eventId: String) {
+        calendarService.finishSessionNow(eventId: eventId)
+    }
 }

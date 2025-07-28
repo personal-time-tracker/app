@@ -16,20 +16,20 @@ struct TrackingView: View {
     @Injected(\.alertManager) var alertManager
 
     var body: some View {
-        VStack {
+        VStack(spacing: 5) {
             // Виджет текущего занятия
             CurrentActivityWidgetView(
                 currentActivity: $vm.currentActivity,
                 isShowNewSessionSheet: $vm.isShowNewSessionSheet
             )
-            .padding()
+            .padding(.horizontal)
             
             if vm.currentActivity == nil {
                 // Виджет последнего занятия
                 PreviousActivityWidgetView(
                     previousActivity: $vm.previousActivity
                 )
-                .padding()
+                .padding(.horizontal)
             }
             
             Spacer()

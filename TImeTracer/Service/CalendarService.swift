@@ -214,16 +214,34 @@ class CalendarService {
             return
         }
         
-        guard let currentEndDate = event.endDate else { return }
-        
-        event.endDate = currentEndDate.addingTimeInterval(timeInterval)
+        // Продлеваем от ТЕКУЩЕГО времени, а не от старого времени окончания
+        event.endDate = Date().addingTimeInterval(timeInterval)
         
         do {
             try eventStore.save(event, span: .thisEvent)
             // После продления нужно обновить состояние
             loadPreviousActivity()
+            // Также проверим, не стало ли это событие текущим
+            loadCurrentActivity()
         } catch {
             print("Ошибка продления события: \(error)")
+        }
+    }
+
+    func finishSessionNow(eventId: String) {
+        guard let event = eventStore.event(withIdentifier: eventId) else {
+            print("Ошибка: не удалось найти событие с ID \(eventId) для завершения")
+            return
+        }
+        
+        event.endDate = Date()
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            loadPreviousActivity()
+            loadCurrentActivity()
+        } catch {
+            print("Ошибка завершения события: \(error)")
         }
     }
     

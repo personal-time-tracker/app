@@ -25,22 +25,37 @@ struct PreviousActivityWidgetView: View {
                         .foregroundColor(.secondary)
                 }
                 
-                // Кнопки для продления
-                HStack(spacing: 10) {
-                    Button("+5 мин") {
-                        vm.extendSession(eventId: session.id, by: 300)
+                // Кнопки для продления и завершения
+                VStack(spacing: 10) {
+                    HStack(spacing: 10) {
+                        Button("+5 мин") {
+                            vm.extendSession(eventId: session.id, by: 300)
+                        }
+                        .buttonStyle(ExtensionButtonStyle())
+                        
+                        Button("+15 мин") {
+                            vm.extendSession(eventId: session.id, by: 900)
+                        }
+                        .buttonStyle(ExtensionButtonStyle())
+                        
+                        Button("+30 мин") {
+                            vm.extendSession(eventId: session.id, by: 1800)
+                        }
+                        .buttonStyle(ExtensionButtonStyle())
                     }
-                    .buttonStyle(ExtensionButtonStyle())
                     
-                    Button("+15 мин") {
-                        vm.extendSession(eventId: session.id, by: 900)
+                    Button(action: {
+                        vm.finishSessionNow(eventId: session.id)
+                    }) {
+                        Label("Закончить сейчас", systemImage: "stop.fill")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(10)
+                            .background(Color.red.opacity(0.15))
+                            .foregroundColor(.red)
+                            .cornerRadius(10)
                     }
-                    .buttonStyle(ExtensionButtonStyle())
-                    
-                    Button("+30 мин") {
-                        vm.extendSession(eventId: session.id, by: 1800)
-                    }
-                    .buttonStyle(ExtensionButtonStyle())
+                    .buttonStyle(.plain) // Используем plain, чтобы наш фон применился корректно
                 }
             }
             .padding()
