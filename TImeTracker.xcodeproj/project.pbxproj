@@ -37,7 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B5E723AD2E35C06A00022C8D /* TImeTracer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TImeTracer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5E723AD2E35C06A00022C8D /* TImeTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TImeTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5E723E92E35D3B900022C8D /* TimeTracerWidgetExtensionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimeTracerWidgetExtensionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5E723EB2E35D3B900022C8D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B5E723ED2E35D3B900022C8D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -45,12 +45,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B5E723D62E35C29B00022C8D /* Exceptions for "TImeTracer" folder in "TImeTracer" target */ = {
+		B5E723D62E35C29B00022C8D /* Exceptions for "TImeTracer" folder in "TImeTracker" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = B5E723AC2E35C06A00022C8D /* TImeTracer */;
+			target = B5E723AC2E35C06A00022C8D /* TImeTracker */;
 		};
 		B5E724032E35D3BA00022C8D /* Exceptions for "TimeTracerWidgetExtension" folder in "TimeTracerWidgetExtensionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -73,7 +73,7 @@
 		B5E723AF2E35C06A00022C8D /* TImeTracer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				B5E723D62E35C29B00022C8D /* Exceptions for "TImeTracer" folder in "TImeTracer" target */,
+				B5E723D62E35C29B00022C8D /* Exceptions for "TImeTracer" folder in "TImeTracker" target */,
 				B5E724182E35D86100022C8D /* Exceptions for "TImeTracer" folder in "TimeTracerWidgetExtensionExtension" target */,
 			);
 			path = TImeTracer;
@@ -123,7 +123,7 @@
 		B5E723AE2E35C06A00022C8D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B5E723AD2E35C06A00022C8D /* TImeTracer.app */,
+				B5E723AD2E35C06A00022C8D /* TImeTracker.app */,
 				B5E723E92E35D3B900022C8D /* TimeTracerWidgetExtensionExtension.appex */,
 			);
 			name = Products;
@@ -141,9 +141,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B5E723AC2E35C06A00022C8D /* TImeTracer */ = {
+		B5E723AC2E35C06A00022C8D /* TImeTracker */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B5E723B92E35C06A00022C8D /* Build configuration list for PBXNativeTarget "TImeTracer" */;
+			buildConfigurationList = B5E723B92E35C06A00022C8D /* Build configuration list for PBXNativeTarget "TImeTracker" */;
 			buildPhases = (
 				B5E723A92E35C06A00022C8D /* Sources */,
 				B5E723AA2E35C06A00022C8D /* Frameworks */,
@@ -158,11 +158,11 @@
 			fileSystemSynchronizedGroups = (
 				B5E723AF2E35C06A00022C8D /* TImeTracer */,
 			);
-			name = TImeTracer;
+			name = TImeTracker;
 			packageProductDependencies = (
 			);
 			productName = TImeTracer;
-			productReference = B5E723AD2E35C06A00022C8D /* TImeTracer.app */;
+			productReference = B5E723AD2E35C06A00022C8D /* TImeTracker.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B5E723E82E35D3B900022C8D /* TimeTracerWidgetExtensionExtension */ = {
@@ -205,7 +205,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracer" */;
+			buildConfigurationList = B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracker" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -219,7 +219,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B5E723AC2E35C06A00022C8D /* TImeTracer */,
+				B5E723AC2E35C06A00022C8D /* TImeTracker */,
 				B5E723E82E35D3B900022C8D /* TimeTracerWidgetExtensionExtension */,
 			);
 		};
@@ -542,7 +542,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracer" */ = {
+		B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5E723B72E35C06A00022C8D /* Debug */,
@@ -551,7 +551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B5E723B92E35C06A00022C8D /* Build configuration list for PBXNativeTarget "TImeTracer" */ = {
+		B5E723B92E35C06A00022C8D /* Build configuration list for PBXNativeTarget "TImeTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5E723BA2E35C06A00022C8D /* Debug */,
