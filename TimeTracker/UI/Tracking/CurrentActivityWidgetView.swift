@@ -29,7 +29,7 @@ struct CurrentActivityWidgetView: View {
                             .fontWeight(.bold)
                         
                         // Время начала и окончания + длительность
-                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime)) (\(formatDuration(currentSession.duration)))")
+                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -57,6 +57,15 @@ struct CurrentActivityWidgetView: View {
                             .foregroundColor(.secondary)
                         
                         Spacer()
+                        
+                        Text(formatDuration(currentSession.duration))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
                     }
                 }
                 .padding()
