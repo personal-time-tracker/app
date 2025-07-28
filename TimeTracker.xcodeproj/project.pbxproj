@@ -62,6 +62,8 @@
 /* Begin PBXFileReference section */
 		B59C423E2E3758620075F759 /* TimeTrackerDev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeTrackerDev.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B59C426C2E3759090075F759 /* TimeTrackerWidgetExtentionDevExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimeTrackerWidgetExtentionDevExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B59C429A2E37626B0075F759 /* TimeTrackerDev.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeTrackerDev.entitlements; sourceTree = "<group>"; };
+		B59C429C2E3763760075F759 /* TimeTrackerWidgetExtentionDevExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeTrackerWidgetExtentionDevExtension.entitlements; sourceTree = "<group>"; };
 		B5E723AD2E35C06A00022C8D /* TimeTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5E723E92E35D3B900022C8D /* TimeTrackerWidgetExtensionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimeTrackerWidgetExtensionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5E723EB2E35D3B900022C8D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -184,6 +186,8 @@
 		B5E723A42E35C06A00022C8D = {
 			isa = PBXGroup;
 			children = (
+				B59C429C2E3763760075F759 /* TimeTrackerWidgetExtentionDevExtension.entitlements */,
+				B59C429A2E37626B0075F759 /* TimeTrackerDev.entitlements */,
 				B5E724192E35DAD500022C8D /* TimeTrackerWidgetExtensionExtension.entitlements */,
 				B5E723AF2E35C06A00022C8D /* TimeTracker */,
 				B5E723EF2E35D3B900022C8D /* TimeTrackerWidgetExtension */,
@@ -439,6 +443,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimeTrackerDev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
@@ -471,6 +476,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimeTrackerDev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
@@ -504,6 +510,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TimeTrackerWidgetExtentionDevExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
@@ -533,6 +540,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TimeTrackerWidgetExtentionDevExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
@@ -679,7 +687,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TImeTracer/TImeTracer.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TimeTracker/TimeTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
@@ -726,7 +734,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TImeTracer/TImeTracer.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TimeTracker/TimeTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 235DAB995B;
