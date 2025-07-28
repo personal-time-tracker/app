@@ -67,7 +67,6 @@
 				Model/TimeSession.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
-				Service/ShortcutsService.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTracerWidgetExtensionExtension */;
 		};
@@ -211,7 +210,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TimeTracker" */;
+			buildConfigurationList = B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracker" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -551,7 +550,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TimeTracker" */ = {
+		B5E723A82E35C06A00022C8D /* Build configuration list for PBXProject "TImeTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5E723B72E35C06A00022C8D /* Debug */,

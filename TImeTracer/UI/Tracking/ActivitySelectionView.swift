@@ -40,6 +40,15 @@ struct ActivitySelectionView: View {
                     .contentShape(Rectangle()) // Увеличиваем область нажатия
                 }
             }
+            
+            // Выбор продолжительности
+            Section(header: Text("Продолжительность")) {
+                DurationPickerView(
+                    hours: $vm.hours,
+                    minutes: $vm.minutes,
+                )
+                .frame(height: 150) // Ограничиваем высоту, чтобы выглядело аккуратно
+            }
                             
             // Кнопка начала
             Button(action: {

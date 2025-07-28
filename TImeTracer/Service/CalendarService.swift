@@ -145,12 +145,12 @@ class CalendarService {
         AppStorageService.saveCurrentSession(currentSession)
     }
     
-    func startNewSession(title: String, calendarId: String) {
+    func startNewSession(title: String, calendarId: String, duration: TimeInterval) {
         // Завершаем текущую сессию
         endCurrentSession()
         
         // Создаем событие в календаре
-        createCalendarEvent(title: title, calendarId: calendarId)
+        createCalendarEvent(title: title, calendarId: calendarId, duration: duration)
         
         // Перезагружаем текущую сессию из календаря
         loadCurrentSession()
@@ -166,13 +166,13 @@ class CalendarService {
         loadCurrentSession()
     }
     
-    private func createCalendarEvent(title: String, calendarId: String) {
+    private func createCalendarEvent(title: String, calendarId: String, duration: TimeInterval) {
         guard let calendar = eventStore.calendar(withIdentifier: calendarId) else { return }
         
         let event = EKEvent(eventStore: eventStore)
         event.title = title
         event.startDate = Date()
-        event.endDate = Date().addingTimeInterval(3600) // 1 час по умолчанию
+        event.endDate = Date().addingTimeInterval(duration) // Используем переданную продолжительность
         event.calendar = calendar
         
         do {
