@@ -125,12 +125,13 @@ class CalendarService {
         let events = eventStore.events(matching: predicate)
         
         // Ищем событие, которое активно сейчас (началось, но не закончилось)
-        let currentEvent = events.first { event in
+        let currentEvent = events.last { event in
             event.startDate <= now && (event.endDate == nil || event.endDate > now)
         }
         
         if let event = currentEvent {
             currentSession = TimeSession(
+                id: event.eventIdentifier, // Сохраняем ID
                 title: event.title,
                 calendarName: event.calendar.title,
                 startTime: event.startDate,
@@ -146,33 +147,37 @@ class CalendarService {
     }
     
     func startNewSession(title: String, calendarId: String, duration: TimeInterval) {
-        // Завершаем текущую сессию
-        endCurrentSession()
+        // Запоминаем точное время начала новой сессии
+        let newSessionStartDate = Date()
         
-        // Создаем событие в календаре
-        createCalendarEvent(title: title, calendarId: calendarId, duration: duration)
+        // Завершаем текущую сессию, устанавливая ее конец точно в момент начала новой
+        endCurrentSession(endDate: newSessionStartDate)
         
-        // Перезагружаем текущую сессию из календаря
-        loadCurrentSession()
-    }
-    
-    func endCurrentSession() {
-        guard let session = currentSession, session.isActive else { return }
-        
-        // Обновляем событие в календаре
-        updateCalendarEvent(for: session)
+        // Создаем событие в календаре, начиная с того же самого момента
+        createCalendarEvent(title: title, calendarId: calendarId, duration: duration, startDate: newSessionStartDate)
         
         // Перезагружаем текущую сессию из календаря
         loadCurrentSession()
     }
     
-    private func createCalendarEvent(title: String, calendarId: String, duration: TimeInterval) {
+    func endCurrentSession(endDate: Date) {
+        // Убеждаемся, что есть сессия и у нее есть ID
+        guard let session = currentSession else { return }
+        
+        // Обновляем событие в календаре по его ID
+        updateCalendarEvent(eventId: session.id, newEndDate: endDate)
+        
+        // Перезагружаем текущую сессию из календаря
+        loadCurrentSession()
+    }
+    
+    private func createCalendarEvent(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {
         guard let calendar = eventStore.calendar(withIdentifier: calendarId) else { return }
         
         let event = EKEvent(eventStore: eventStore)
         event.title = title
-        event.startDate = Date()
-        event.endDate = Date().addingTimeInterval(duration) // Используем переданную продолжительность
+        event.startDate = startDate // Используем переданную дату начала
+        event.endDate = startDate.addingTimeInterval(duration)
         event.calendar = calendar
         
         do {
@@ -182,23 +187,18 @@ class CalendarService {
         }
     }
     
-    private func updateCalendarEvent(for session: TimeSession) {
-        let now = Date()
+    private func updateCalendarEvent(eventId: String, newEndDate: Date) {
+        // Получаем событие напрямую по его идентификатору
+        guard let event = eventStore.event(withIdentifier: eventId) else {
+            print("Ошибка: не удалось найти событие с ID \(eventId)")
+            return
+        }
         
-        let predicate = eventStore.predicateForEvents(
-            withStart: session.startTime,
-            end: now.addingTimeInterval(3600),
-            calendars: [eventStore.calendar(withIdentifier: session.calendarName)].compactMap { $0 }
-        )
-        
-        let events = eventStore.events(matching: predicate)
-        if let event = events.first {
-            event.endDate = now
-            do {
-                try eventStore.save(event, span: .thisEvent)
-            } catch {
-                print("Ошибка обновления события: \(error)")
-            }
+        event.endDate = newEndDate
+        do {
+            try eventStore.save(event, span: .thisEvent)
+        } catch {
+            print("Ошибка обновления события: \(error)")
         }
     }
     
@@ -217,6 +217,7 @@ class CalendarService {
         let events = eventStore.events(matching: predicate)
         return events.map { event in
             TimeSession(
+                id: event.eventIdentifier,
                 title: event.title,
                 calendarName: event.calendar.title,
                 startTime: event.startDate,

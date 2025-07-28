@@ -89,10 +89,11 @@ struct TimeTracerTimelineProvider: TimelineProvider {
         TimeTracerTimelineEntry(
             date: Date(),
             currentSession: TimeSession(
+                id: UUID().uuidString,
                 title: "Работа",
                 calendarName: "test",
-                startTime: Date().addingTimeInterval(-3600),
-                endTime: nil,
+                startTime: Date.now.addingTimeInterval(-3600),
+                endTime: Date.now,
                 category: "Работа"
             )
         )
@@ -127,10 +128,11 @@ struct TimeTracerTimelineProvider: TimelineProvider {
     TimeTracerTimelineEntry(
         date: Date(),
         currentSession: TimeSession(
+            id: UUID().uuidString,
             title: "Работа",
             calendarName: "test",
-            startTime: Date().addingTimeInterval(-3600),
-            endTime: nil,
+            startTime: Date.now.addingTimeInterval(-3600),
+            endTime: Date.now,
             category: "Работа"
         )
     )

@@ -101,9 +101,11 @@ struct CurrentActivityWidget: View {
     VStack {
         CurrentActivityWidget(
             currentSession: .constant(TimeSession(
+                id: UUID().uuidString,
                 title: "Занятие",
                 calendarName: "⏱️ Работа",
-                startTime: Date.now,
+                startTime: Date.now.addingTimeInterval(-3600),
+                endTime: Date.now,
                 category: nil
             )),
             isShowNewSessionSheet: .constant(true)
