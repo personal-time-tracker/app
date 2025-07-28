@@ -3,6 +3,7 @@ import SwiftUI
 struct CurrentActivityWidgetView: View {
     
     @State private var vm = CurrentActivityWidgetViewModel()
+    @State private var isShowingTimePopover = false
         
     var currentActivity: TimeActivity?
     @Binding var isShowNewSessionSheet: Bool
@@ -58,14 +59,21 @@ struct CurrentActivityWidgetView: View {
                         
                         Spacer()
                         
-                        Text(formatDuration(currentSession.duration))
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
+                        Button {
+                            isShowingTimePopover = true
+                        } label: {
+                            Text(formatDuration(currentSession.duration))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                        }
+                        .popover(isPresented: $isShowingTimePopover) {
+                            timeAdjustmentPopover(for: currentSession)
+                        }
                     }
                 }
                 .padding()
@@ -143,6 +151,41 @@ struct CurrentActivityWidgetView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+    
+    @ViewBuilder
+    private func timeAdjustmentPopover(for activity: TimeActivity) -> some View {
+        VStack(spacing: 0) {
+            let adjustments: [TimeInterval] = [3600, 1800, 900, -900] // +1h, +30m, +15m, -15m
+            
+            ForEach(adjustments, id: \.self) { interval in
+                Button {
+                    vm.updateEndTime(for: activity, by: interval)
+                    isShowingTimePopover = false
+                } label: {
+                    Text(formatTimeAdjustment(interval))
+                        .frame(maxWidth: .infinity)
+                }
+                .padding()
+                
+                if interval != adjustments.last {
+                    Divider()
+                }
+            }
+        }
+        .presentationCompactAdaptation(.popover)
+    }
+    
+    private func formatTimeAdjustment(_ interval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .full
+        
+        if interval > 0 {
+            return "+ \(formatter.string(from: interval) ?? "")"
+        } else {
+            return "- \(formatter.string(from: abs(interval)) ?? "")"
+        }
     }
 }
 

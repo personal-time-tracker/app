@@ -48,6 +48,10 @@ class CurrentActivityWidgetViewModel {
         return formatter.string(from: interval) ?? ""
     }
     
+    func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
+        calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+    }
+    
     func finishSessionNow(eventId: String) {
         calendarService.finishSessionNow(eventId: eventId)
     }

@@ -210,6 +210,22 @@ class CalendarService {
         loadCurrentActivity()
     }
     
+    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для изменения времени")
+            return
+        }
+        
+        event.endDate = event.endDate.addingTimeInterval(timeInterval)
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            loadCurrentActivity() // Обновляем UI
+        } catch {
+            print("Ошибка изменения времени окончания события: \(error)")
+        }
+    }
+    
     func endCurrentActivity(endDate: Date) {
         guard let activity = currentActivity else { return }
         
