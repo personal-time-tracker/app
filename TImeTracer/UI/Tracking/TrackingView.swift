@@ -16,44 +16,46 @@ struct TrackingView: View {
     @Injected(\.alertManager) var alertManager
 
     var body: some View {
-        VStack(spacing: 5) {
-            // Виджет текущего занятия
-            CurrentActivityWidgetView(
-                currentActivity: $vm.currentActivity,
-                isShowNewSessionSheet: $vm.isShowNewSessionSheet
-            )
-            .padding(.horizontal)
-            
-            if vm.currentActivity == nil {
-                // Виджет последнего занятия
-                PreviousActivityWidgetView(
-                    previousActivity: $vm.previousActivity
+        ScrollView {
+            VStack(spacing: 10) {
+                // Виджет текущего занятия
+                CurrentActivityWidgetView(
+                    currentActivity: $vm.currentActivity,
+                    isShowNewSessionSheet: $vm.isShowNewSessionSheet
                 )
                 .padding(.horizontal)
+                
+                if vm.currentActivity == nil {
+                    // Виджет последнего занятия
+                    PreviousActivityWidgetView(
+                        previousActivity: $vm.previousActivity
+                    )
+                    .padding(.horizontal)
+                }
+                
+                Spacer()
             }
-            
-            Spacer()
-        }
-        .navigationTitle("Учет времени")
-        .toolbar{
-            ToolbarItem {
-                NavigationLink(value: TrackingTabListRoute.settings) {
-                    Image(systemName: "gearshape.fill")
+            .navigationTitle("Учет времени")
+            .toolbar{
+                ToolbarItem {
+                    NavigationLink(value: TrackingTabListRoute.settings) {
+                        Image(systemName: "gearshape.fill")
+                    }
                 }
             }
-        }
-        .task {
-            do {
-                // Обновляем текущую сессию при появлении экрана
-                try await vm.load()
-            } catch {
-                alertManager.error(error)
+            .task {
+                do {
+                    // Обновляем текущую сессию при появлении экрана
+                    try await vm.load()
+                } catch {
+                    alertManager.error(error)
+                }
+            }
+            .sheet(isPresented: $vm.isShowNewSessionSheet) {
+                CreateActivityView()
             }
         }
         .background(Color(.systemGroupedBackground))
-        .sheet(isPresented: $vm.isShowNewSessionSheet) {
-            CreateActivityView()
-        }
     }
 }
 

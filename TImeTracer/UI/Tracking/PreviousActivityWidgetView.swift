@@ -20,13 +20,18 @@ struct PreviousActivityWidgetView: View {
                     Text(session.title)
                         .font(.title2)
                         .fontWeight(.bold)
+                    
+                    Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
                     Text("Длительность: \(format(duration: session.duration))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
                 
                 // Кнопки для продления и завершения
-                VStack(spacing: 10) {
+                VStack(spacing: 1) {
                     HStack(spacing: 10) {
                         Button("+5 мин") {
                             vm.extendSession(eventId: session.id, by: 300)
@@ -62,6 +67,13 @@ struct PreviousActivityWidgetView: View {
             .background(Color(.secondarySystemGroupedBackground))
             .cornerRadius(16)
         }
+    }
+    
+    // Хелпер для форматирования времени
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
     }
 
     // Хелпер для форматирования времени

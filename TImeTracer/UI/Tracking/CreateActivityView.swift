@@ -42,7 +42,7 @@ struct CreateActivityView: View {
             }
             
             // Выбор продолжительности
-            Section(header: Text("Продолжительность")) {
+            Section(header: Text("Планируемая продолжительность")) {
                 DurationPickerView(
                     hours: $vm.hours,
                     minutes: $vm.minutes,

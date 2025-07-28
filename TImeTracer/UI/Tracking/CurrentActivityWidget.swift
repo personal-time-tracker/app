@@ -20,10 +20,19 @@ struct CurrentActivityWidgetView: View {
             // Текущее занятие
             if let currentSession = currentActivity {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(currentSession.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                    // Информация о занятии
+                    VStack(alignment: .leading) {
+                        Text(currentSession.title)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        // Время начала и окончания
+                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime ?? Date()))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
                     
                     HStack {
                         Image(systemName: "calendar")
@@ -94,6 +103,12 @@ struct CurrentActivityWidgetView: View {
         } else {
             return "\(minutes)м"
         }
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
     }
 }
 
