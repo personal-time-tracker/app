@@ -44,7 +44,9 @@ struct TrackingView: View {
                 }
             }
             .sheet(isPresented: $vm.isShowNewSessionSheet) {
-                CreateActivityView()
+                NavigationStack {
+                    CreateActivityView()
+                }
             }
         }
         .background(Color(.systemGroupedBackground))

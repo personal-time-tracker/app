@@ -403,6 +403,26 @@ class CalendarService {
         return resultingActivities
     }
     
+    func getUniqueRecentActivities() -> [TimeActivity] {
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .year, value: -1, to: endDate)!
+        
+        let allActivities = getActivities(from: startDate, to: endDate)
+        
+        var uniqueActivities: [TimeActivity] = []
+        var seenTuples = Set<String>()
+        
+        for activity in allActivities.reversed() { // Начинаем с самых свежих
+            let tuple = "\(activity.title)-\(activity.calendarId)"
+            if !seenTuples.contains(tuple) {
+                uniqueActivities.append(activity)
+                seenTuples.insert(tuple)
+            }
+        }
+        
+        return uniqueActivities
+    }
+    
     func getCalendarTitle(by id: String) -> String {
         return eventStore.calendar(withIdentifier: id)?.title ?? ""
     }

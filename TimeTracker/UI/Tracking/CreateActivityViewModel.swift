@@ -15,6 +15,17 @@ class CreateActivityViewModel {
     var hours: Int = 1
     var minutes: Int = 0
     
+    var recentActivities: [TimeActivity] = []
+    
+    var filteredActivities: [TimeActivity] {
+        if activityTitle.isEmpty {
+            return recentActivities
+        }
+        return recentActivities.filter {
+            $0.title.lowercased().contains(activityTitle.lowercased()) && $0.title.lowercased() != activityTitle.lowercased()
+        }
+    }
+    
     var calendars: [CalendarInfo] {
         calendarService.calendars
     }
@@ -28,6 +39,9 @@ class CreateActivityViewModel {
             calendarService.loadCalendars()
         }
         
+        // Загружаем недавние активности
+        recentActivities = calendarService.getUniqueRecentActivities()
+        
         // Если остался только один календарь, выбираем его автоматически
         if calendars.count == 1 {
             selectedCalendarId = calendars.first?.id ?? ""
@@ -38,6 +52,11 @@ class CreateActivityViewModel {
         !activityTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !selectedCalendarId.isEmpty &&
         (hours > 0 || minutes > 0) // Продолжительность должна быть больше нуля
+    }
+    
+    func selectSuggestion(_ activity: TimeActivity) {
+        activityTitle = activity.title
+        selectedCalendarId = activity.calendarId
     }
     
     func startActivity() {
