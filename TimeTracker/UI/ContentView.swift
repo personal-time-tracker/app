@@ -13,6 +13,8 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showingSettings = false
     
+    @AppStorage("selectedTheme") private var selectedTheme: Theme = .system
+    
     @ObservationIgnored
     @Injected(\.calendarService) var calendarService
     
@@ -21,9 +23,10 @@ struct ContentView: View {
 
     var body: some View {
         AppTabView()
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
+            .preferredColorScheme(selectedTheme.colorScheme)
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
         // Добавляем обработчик изменений фазы сцены
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {

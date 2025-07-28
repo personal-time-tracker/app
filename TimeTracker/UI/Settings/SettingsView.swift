@@ -6,10 +6,19 @@ struct SettingsView: View {
     @State private var showingPrefixPicker = false
     
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
+    @AppStorage("selectedTheme") private var selectedTheme: Theme = .system
     
     var body: some View {
         NavigationView {
             Form {
+                Section("Оформление") {
+                    Picker("Тема", selection: $selectedTheme) {
+                        ForEach(Theme.allCases) { theme in
+                            Text(theme.displayName).tag(theme)
+                        }
+                    }
+                }
+                
                 Section("Префикс календарей") {
                     Text("Приложение будет работать только с календарями, содержащими выбранный префикс в названии")
                         .font(.caption)
