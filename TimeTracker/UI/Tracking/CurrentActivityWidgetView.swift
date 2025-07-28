@@ -3,8 +3,10 @@ import SwiftUI
 struct CurrentActivityWidgetView: View {
     
     @State private var vm = CurrentActivityWidgetViewModel()
+    @State private var isShowingTimePopover = false
+    var namespace: Namespace.ID
         
-    var currentActivity: TimeSession?
+    var currentActivity: TimeActivity?
     @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
@@ -20,43 +22,21 @@ struct CurrentActivityWidgetView: View {
             }
             
             // Текущее занятие
-            if let currentSession = currentActivity {
-                VStack(alignment: .leading, spacing: 8) {
-                    // Информация о занятии
-                    VStack(alignment: .leading) {
-                        Text(currentSession.title)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        // Время начала и окончания
-                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime))")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    HStack {
-                        Image(systemName: "calendar")
-                            .foregroundColor(.secondary)
-                        Text(currentSession.calendarName)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text(formatDuration(currentSession.duration))
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
-                    }
+            if let activity = currentActivity {
+                NavigationLink(value: TrackingTabListRoute.editActivity(activity)) {
+                    ActivityCardView(
+                        activity: activity,
+                        progress: vm.progress(for: activity),
+                        progressColor: .blue,
+                        leftLabel: vm.elapsedTimeString(for: activity),
+                        rightLabel: vm.remainingTimeString(for: activity),
+                        onTimeAdjustment: { timeInterval in
+                            vm.updateEndTime(for: activity, by: timeInterval)
+                        }
+                    )
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .buttonStyle(.plain)
+                .matchedGeometryEffect(id: activity.id, in: namespace)
                 
                 // Кнопка действия
                 HStack(spacing: 8) {
@@ -111,31 +91,17 @@ struct CurrentActivityWidgetView: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
     }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) % 3600 / 60
-        
-        if hours > 0 {
-            return "\(hours)ч \(minutes)м"
-        } else {
-            return "\(minutes)м"
-        }
-    }
-
-    private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
 }
 
 #Preview("With data") {
+    @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
-            currentActivity: TimeSession(
+            namespace: _namespace.wrappedValue,
+            currentActivity: TimeActivity(
                 id: UUID().uuidString,
                 title: "Занятие",
+                calendarId: UUID().uuidString,
                 calendarName: "⏱️ Работа",
                 startTime: Date.now.addingTimeInterval(-3600),
                 endTime: Date.now,
@@ -150,8 +116,10 @@ struct CurrentActivityWidgetView: View {
 }
 
 #Preview("Without data") {
+    @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
+            namespace: _namespace.wrappedValue,
             currentActivity: nil,
             isShowNewSessionSheet: .constant(true)
         )

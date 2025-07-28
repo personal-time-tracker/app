@@ -10,8 +10,8 @@ class CalendarService {
     private let eventStore = EKEventStore()
     
     var calendars: [CalendarInfo] = []
-    var currentActivity: TimeSession?
-    var previousActivity: TimeSession?
+    var currentActivity: TimeActivity?
+    var previousActivity: TimeActivity?
     
     @ObservationIgnored
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
@@ -139,9 +139,10 @@ class CalendarService {
         }
         
         if let event = currentEvent {
-            currentActivity = TimeSession(
+            currentActivity = TimeActivity(
                 id: event.eventIdentifier, // Сохраняем ID
                 title: event.title,
+                calendarId: event.calendar.calendarIdentifier,
                 calendarName: event.calendar.title,
                 startTime: event.startDate,
                 endTime: event.endDate,
@@ -181,9 +182,10 @@ class CalendarService {
             .sorted(by: { $0.endDate! > $1.endDate! }) // Сортируем по дате окончания, самые новые вверху
             
         if let lastEvent = events.first {
-            previousActivity = TimeSession(
+            previousActivity = TimeActivity(
                 id: lastEvent.eventIdentifier,
                 title: lastEvent.title,
+                calendarId: lastEvent.calendar.calendarIdentifier,
                 calendarName: lastEvent.calendar.title,
                 startTime: lastEvent.startDate,
                 endTime: lastEvent.endDate,
@@ -194,9 +196,9 @@ class CalendarService {
         }
     }
     
-    func startNewSession(title: String, calendarId: String, duration: TimeInterval) {
+    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {
         // Запоминаем точное время начала новой сессии
-        let newSessionStartDate = Date()
+        let newSessionStartDate = startDate
         
         // Завершаем текущую сессию, устанавливая ее конец точно в момент начала новой
         endCurrentActivity(endDate: newSessionStartDate)
@@ -208,10 +210,26 @@ class CalendarService {
         loadCurrentActivity()
     }
     
-    func endCurrentActivity(endDate: Date) {
-        guard let session = currentActivity else { return }
+    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для изменения времени")
+            return
+        }
         
-        updateCalendarEvent(eventId: session.id, newEndDate: endDate)
+        event.endDate = event.endDate.addingTimeInterval(timeInterval)
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            loadCurrentActivity() // Обновляем UI
+        } catch {
+            print("Ошибка изменения времени окончания события: \(error)")
+        }
+    }
+    
+    func endCurrentActivity(endDate: Date) {
+        guard let activity = currentActivity else { return }
+        
+        updateCalendarEvent(eventId: activity.id.components(separatedBy: "_part").first ?? "", newEndDate: endDate)
         
         loadCurrentActivity()
     }
@@ -284,7 +302,43 @@ class CalendarService {
         }
     }
     
-    func getSessions(from startDate: Date, to endDate: Date) -> [TimeSession] {
+    func updateActivity(_ activity: TimeActivity) {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для обновления")
+            return
+        }
+        
+        event.title = activity.title
+        event.startDate = activity.startTime
+        event.endDate = activity.endTime
+        
+        if let calendar = eventStore.calendar(withIdentifier: activity.calendarId) {
+            event.calendar = calendar
+        }
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            loadCurrentActivity()
+        } catch {
+            print("Ошибка обновления события: \(error)")
+        }
+    }
+    
+    func deleteActivity(_ activity: TimeActivity) {
+        guard let event = eventStore.event(withIdentifier: activity.id) else {
+            print("Ошибка: не удалось найти событие с ID \(activity.id) для удаления")
+            return
+        }
+        
+        do {
+            try eventStore.remove(event, span: .thisEvent)
+            loadCurrentActivity()
+        } catch {
+            print("Ошибка удаления события: \(error)")
+        }
+    }
+    
+    func getActivities(from startDate: Date, to endDate: Date) -> [TimeActivity] {
         // Получаем только календари с настраиваемым префиксом
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
             calendar.title.contains(calendarPrefix)
@@ -297,16 +351,100 @@ class CalendarService {
         )
         
         let events = eventStore.events(matching: predicate)
-        return events.map { event in
-            TimeSession(
-                id: event.eventIdentifier,
-                title: event.title,
-                calendarName: event.calendar.title,
-                startTime: event.startDate,
-                endTime: event.endDate,
-                category: event.calendar.title
-            )
+        var resultingActivities: [TimeActivity] = []
+
+        for event in events {
+            guard let eventEndDate = event.endDate else { continue } // Пропускаем сессии без времени окончания
+
+            let calendar = Calendar.current
+            let eventStartDate = event.startDate!
+
+            // Если сессия не пересекает полночь, просто добавляем ее
+            if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
+                if eventStartDate != eventEndDate { // Исключаем события с нулевой длительностью на границе дня
+                    resultingActivities.append(TimeActivity(
+                        id: event.eventIdentifier,
+                        title: event.title,
+                        calendarId: event.calendar.calendarIdentifier,
+                        calendarName: event.calendar.title,
+                        startTime: eventStartDate,
+                        endTime: eventEndDate,
+                        category: event.calendar.title
+                    ))
+                }
+            } else {
+                // Если сессия пересекает полночь, делим ее на части
+                var currentDate = eventStartDate
+                var partIndex = 1
+
+                while currentDate < eventEndDate {
+                    let startOfNextDay = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate)!)
+                    let endOfThisSegment = min(startOfNextDay, eventEndDate)
+
+                    if currentDate < endOfThisSegment { // Добавляем сегмент, только если он имеет продолжительность
+                        let activityPart = TimeActivity(
+                            id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
+                            title: event.title,
+                            calendarId: event.calendar.calendarIdentifier,
+                            calendarName: event.calendar.title,
+                            startTime: currentDate,
+                            endTime: endOfThisSegment,
+                            category: event.calendar.title
+                        )
+                        resultingActivities.append(activityPart)
+                    }
+
+                    currentDate = endOfThisSegment
+                    partIndex += 1
+                }
+            }
         }
+        
+        return resultingActivities
+    }
+    
+    func getActivity(by id: String) -> TimeActivity? {
+        // Извлекаем оригинальный ID, отбрасывая суффикс "_part"
+        let originalEventId = id.components(separatedBy: "_part").first ?? id
+        
+        guard let event = eventStore.event(withIdentifier: originalEventId) else {
+            return nil
+        }
+        
+        // Возвращаем полный, неразрезанный TimeActivity
+        return TimeActivity(
+            id: event.eventIdentifier,
+            title: event.title,
+            calendarId: event.calendar.calendarIdentifier,
+            calendarName: event.calendar.title,
+            startTime: event.startDate,
+            endTime: event.endDate,
+            category: event.calendar.title
+        )
+    }
+    
+    func getUniqueRecentActivities() -> [TimeActivity] {
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .year, value: -1, to: endDate)!
+        
+        let allActivities = getActivities(from: startDate, to: endDate)
+        
+        var uniqueActivities: [TimeActivity] = []
+        var seenTuples = Set<String>()
+        
+        for activity in allActivities.reversed() { // Начинаем с самых свежих
+            let tuple = "\(activity.title)-\(activity.calendarId)"
+            if !seenTuples.contains(tuple) {
+                uniqueActivities.append(activity)
+                seenTuples.insert(tuple)
+            }
+        }
+        
+        return uniqueActivities
+    }
+    
+    func getCalendarTitle(by id: String) -> String {
+        return eventStore.calendar(withIdentifier: id)?.title ?? ""
     }
     
     // MARK: - Calendar Synchronization

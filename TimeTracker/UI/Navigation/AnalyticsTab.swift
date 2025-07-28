@@ -8,7 +8,7 @@ struct AnalyticsTab: View {
     @Injected(\.calendarService) private var calendarService
 
     @State private var selectedPeriod: AnalyticsPeriod = .week
-    @State private var sessions: [TimeSession] = []
+    @State private var activities: [TimeActivity] = []
     
     enum AnalyticsPeriod: String, CaseIterable {
         case day = "День"
@@ -42,37 +42,37 @@ struct AnalyticsTab: View {
                     .padding(.horizontal)
                     
                     // Общая статистика
-                    StatisticsCardsView(sessions: sessions)
+                    StatisticsCardsView(activities: activities)
                     
                     // График по дням
-                    DailyChartView(sessions: sessions)
+                    DailyChartView(activities: activities)
                     
                     // Топ занятий
-                    TopActivitiesView(sessions: sessions)
+                    TopActivitiesView(activities: activities)
                     
                     // График по категориям
-                    CategoryChartView(sessions: sessions)
+                    CategoryChartView(activities: activities)
                 }
                 .padding()
             }
             .navigationTitle("Аналитика")
             .onAppear {
-                loadSessions()
+                loadactivities()
             }
             .onChange(of: selectedPeriod) { _ in
-                loadSessions()
+                loadactivities()
             }
         }
     }
     
-    private func loadSessions() {
+    private func loadactivities() {
         let interval = selectedPeriod.dateInterval
-        sessions = calendarService.getSessions(from: interval.start, to: interval.end)
+        activities = calendarService.getActivities(from: interval.start, to: interval.end)
     }
 }
 
 struct StatisticsCardsView: View {
-    let sessions: [TimeSession]
+    let activities: [TimeActivity]
     
     var body: some View {
         LazyVGrid(columns: [
@@ -88,7 +88,7 @@ struct StatisticsCardsView: View {
             
             StatCard(
                 title: "Сессий",
-                value: "\(sessions.count)",
+                value: "\(activities.count)",
                 icon: "number.circle.fill",
                 color: .green
             )
@@ -110,11 +110,11 @@ struct StatisticsCardsView: View {
     }
     
     private var uniqueActivities: [String] {
-        Array(Set(sessions.map { $0.title }))
+        Array(Set(activities.map { $0.title }))
     }
     
     private func formatTotalTime() -> String {
-        let totalSeconds = sessions.reduce(0) { $0 + $1.duration }
+        let totalSeconds = activities.reduce(0) { $0 + $1.duration }
         let hours = Int(totalSeconds) / 3600
         let minutes = Int(totalSeconds) % 3600 / 60
         
@@ -126,10 +126,10 @@ struct StatisticsCardsView: View {
     }
     
     private func formatAverageSession() -> String {
-        guard !sessions.isEmpty else { return "0м" }
+        guard !activities.isEmpty else { return "0м" }
         
-        let totalSeconds = sessions.reduce(0) { $0 + $1.duration }
-        let averageSeconds = totalSeconds / Double(sessions.count)
+        let totalSeconds = activities.reduce(0) { $0 + $1.duration }
+        let averageSeconds = totalSeconds / Double(activities.count)
         let minutes = Int(averageSeconds) / 60
         
         return "\(minutes)м"
@@ -165,7 +165,7 @@ struct StatCard: View {
 }
 
 struct DailyChartView: View {
-    let sessions: [TimeSession]
+    let activities: [TimeActivity]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -198,12 +198,12 @@ struct DailyChartView: View {
     
     private var dailyData: [DailyData] {
         let calendar = Calendar.current
-        let groupedSessions = Dictionary(grouping: sessions) { session in
+        let groupedactivities = Dictionary(grouping: activities) { session in
             calendar.startOfDay(for: session.startTime)
         }
         
-        return groupedSessions.map { date, sessions in
-            let totalHours = sessions.reduce(0) { $0 + $1.duration } / 3600
+        return groupedactivities.map { date, activities in
+            let totalHours = activities.reduce(0) { $0 + $1.duration } / 3600
             return DailyData(
                 day: calendar.component(.day, from: date),
                 hours: totalHours
@@ -219,7 +219,7 @@ struct DailyData: Identifiable {
 }
 
 struct TopActivitiesView: View {
-    let sessions: [TimeSession]
+    let activities: [TimeActivity]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -248,9 +248,9 @@ struct TopActivitiesView: View {
     }
     
     private var topActivities: [ActivityStats] {
-        let grouped = Dictionary(grouping: sessions) { $0.title }
-        return grouped.map { title, sessions in
-            let totalDuration = sessions.reduce(0) { $0 + $1.duration }
+        let grouped = Dictionary(grouping: activities) { $0.title }
+        return grouped.map { title, activities in
+            let totalDuration = activities.reduce(0) { $0 + $1.duration }
             return ActivityStats(title: title, totalDuration: totalDuration)
         }.sorted { $0.totalDuration > $1.totalDuration }
     }
@@ -273,7 +273,7 @@ struct ActivityStats {
 }
 
 struct CategoryChartView: View {
-    let sessions: [TimeSession]
+    let activities: [TimeActivity]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -303,9 +303,9 @@ struct CategoryChartView: View {
     }
     
     private var categoryData: [CategoryData] {
-        let grouped = Dictionary(grouping: sessions) { $0.category ?? "Без категории" }
-        return grouped.map { category, sessions in
-            let totalHours = sessions.reduce(0) { $0 + $1.duration } / 3600
+        let grouped = Dictionary(grouping: activities) { $0.category ?? "Без категории" }
+        return grouped.map { category, activities in
+            let totalHours = activities.reduce(0) { $0 + $1.duration } / 3600
             return CategoryData(category: category, hours: totalHours)
         }.sorted { $0.hours > $1.hours }
     }

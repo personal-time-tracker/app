@@ -2,86 +2,81 @@ import SwiftUI
 
 struct PreviousActivityWidgetView: View {
     
-    var previousActivity: TimeSession?
+    var previousActivity: TimeActivity?
+    var namespace: Namespace.ID
     
     @State private var vm = PreviousActivityWidgetViewModel()
 
     var body: some View {
         // Показываем виджет только если есть последняя завершенная сессия
         if let session = previousActivity {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
                 // Заголовок
-                Text("Последнее занятие")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                // Информация о занятии
-                VStack(alignment: .leading) {
-                    Text(session.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
-                        .font(.subheadline)
+                HStack {
+                    Image(systemName: "arrow.backward.circle.fill")
                         .foregroundColor(.secondary)
-                    
-                    Text("Длительность: \(format(duration: session.duration))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text("Последнее занятие")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Spacer()
                 }
                 
-                // Кнопки для продления и завершения
-                VStack(spacing: 10) {
-                    HStack(spacing: 10) {
-                        Button("+5 мин") {
-                            vm.extendSession(eventId: session.id, by: 300)
-                        }
-                        .buttonStyle(ExtensionButtonStyle())
-                        
-                        Button("+15 мин") {
-                            vm.extendSession(eventId: session.id, by: 900)
-                        }
-                        .buttonStyle(ExtensionButtonStyle())
-                        
-                        Button("+30 мин") {
-                            vm.extendSession(eventId: session.id, by: 1800)
-                        }
-                        .buttonStyle(ExtensionButtonStyle())
+                VStack(alignment: .leading, spacing: 12) {
+                    NavigationLink(value: TrackingTabListRoute.editActivity(session)) {
+                        ActivityCardView(
+                            activity: session,
+                            progress: 1.0, // Для предыдущей всегда полная
+                            progressColor: .red,
+                            leftLabel: "",
+                            rightLabel: vm.timeSinceEndedString(for: session)
+                        )
                     }
+                    .buttonStyle(.plain)
+                    .matchedGeometryEffect(id: session.id, in: namespace)
                     
-                    Button(action: {
-                        vm.finishSessionNow(eventId: session.id)
-                    }) {
-                        Label("Закончить сейчас", systemImage: "stop.fill")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding(10)
-                            .background(Color.red.opacity(0.15))
-                            .foregroundColor(.red)
-                            .cornerRadius(10)
+                    // Кнопки для продления и завершения
+                    VStack(spacing: 10) {
+                        
+                        Text("Продолжить и добавить время:")
+                            .font(.caption)
+                        
+                        HStack(spacing: 10) {
+                            Button("+5 мин") {
+                                vm.extendSession(eventId: session.id, by: 300)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
+                            
+                            Button("+15 мин") {
+                                vm.extendSession(eventId: session.id, by: 900)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
+                            
+                            Button("+30 мин") {
+                                vm.extendSession(eventId: session.id, by: 1800)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                        
+                        Button(action: {
+                            vm.finishSessionNow(eventId: session.id)
+                        }) {
+                            Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(10)
+                                .background(Color.red.opacity(0.15))
+                                .foregroundColor(.red)
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain) // Используем plain, чтобы наш фон применился корректно
                 }
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Color(.systemBackground))
             .cornerRadius(16)
         }
-    }
-    
-    // Хелпер для форматирования времени
-    private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
-
-    // Хелпер для форматирования времени
-    private func format(duration: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        return formatter.string(from: duration) ?? "0m"
     }
 }
 
@@ -93,16 +88,28 @@ struct ExtensionButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .padding(10)
             .background(Color.accentColor.opacity(0.15))
-            .foregroundColor(.accentColor)
+            .foregroundColor(Color.accentColor)
             .cornerRadius(10)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
 }
 
 // Preview
 struct PreviousActivityWidget_Previews: PreviewProvider {
-    static var previews: some View {      
+    static var previews: some View {
+        @Namespace var namespace
         return PreviousActivityWidgetView(
-            previousActivity: nil
+            previousActivity: TimeActivity(
+                id: UUID().uuidString,
+                title: "Прошлый проект",
+                calendarId: "1",
+                calendarName: "Работа",
+                startTime: Date().addingTimeInterval(-7200),
+                endTime: Date().addingTimeInterval(-3600),
+                category: "Работа"
+            ),
+            namespace: namespace
         )
             .padding()
             .background(Color(.systemGroupedBackground))

@@ -76,7 +76,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Model/CalendarInfo.swift,
-				Model/TimeSession.swift,
+				Model/TimeActivity.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
 			);
@@ -114,7 +114,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Model/CalendarInfo.swift,
-				Model/TimeSession.swift,
+				Model/TimeActivity.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
 			);

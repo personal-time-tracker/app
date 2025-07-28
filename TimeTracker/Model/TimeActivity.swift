@@ -1,10 +1,11 @@
 import Foundation
 
-struct TimeSession: Identifiable, Codable {
+struct TimeActivity: Identifiable, Codable, Hashable {
     let id: String
-    let title: String
-    let calendarName: String
-    let startTime: Date
+    var title: String
+    var calendarId: String
+    var calendarName: String
+    var startTime: Date
     var endTime: Date
     let category: String?
     
