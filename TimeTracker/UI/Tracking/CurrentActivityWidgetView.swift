@@ -21,37 +21,42 @@ struct CurrentActivityWidgetView: View {
             
             // Текущее занятие
             if let currentSession = currentActivity {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     // Информация о занятии
                     VStack(alignment: .leading) {
                         Text(currentSession.title)
                             .font(.title2)
                             .fontWeight(.bold)
                         
-                        // Время начала и окончания
-                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime))")
+                        // Время начала и окончания + длительность
+                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime)) (\(formatDuration(currentSession.duration)))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                     
-                    Spacer()
+                    // Полоса прогресса
+                    VStack(spacing: 4) {
+                        ProgressView(value: vm.progress(for: currentSession))
+                            .tint(.blue)
+                        
+                        HStack {
+                            Text(vm.elapsedTimeString(for: currentSession))
+                            Spacer()
+                            Text(vm.remainingTimeString(for: currentSession))
+                        }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
                     
+                    // Календарь
                     HStack {
                         Image(systemName: "calendar")
                             .foregroundColor(.secondary)
-                        Text(currentSession.calendarName)
+                        Text(currentSession.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
                         Spacer()
-                        
-                        Text(formatDuration(currentSession.duration))
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
                     }
                 }
                 .padding()
@@ -116,8 +121,10 @@ struct CurrentActivityWidgetView: View {
         let hours = Int(duration) / 3600
         let minutes = Int(duration) % 3600 / 60
         
-        if hours > 0 {
+        if hours > 0 && minutes > 0 {
             return "\(hours)ч \(minutes)м"
+        } else if hours > 0 {
+            return "\(hours)ч"
         } else {
             return "\(minutes)м"
         }
