@@ -65,6 +65,26 @@ class CalendarService {
         }
     }
     
+    func createCalendar(fullTitle: String) {
+        let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
+        newCalendar.title = fullTitle
+        
+        // Пытаемся найти источник. Если не находим, используем дефолтный.
+        if let source = eventStore.sources.first(where: { $0.sourceType == .calDAV || $0.sourceType == .local }) {
+            newCalendar.source = source
+        } else {
+            newCalendar.source = eventStore.defaultCalendarForNewEvents?.source
+        }
+        
+        do {
+            try eventStore.saveCalendar(newCalendar, commit: true)
+            // После создания сразу обновляем список календарей
+            loadCalendars()
+        } catch {
+            print("Ошибка создания календаря: \(error.localizedDescription)")
+        }
+    }
+    
     func loadCalendars() {
         let ekCalendars = eventStore.calendars(for: .event)
         

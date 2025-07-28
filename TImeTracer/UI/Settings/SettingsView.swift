@@ -74,7 +74,7 @@ struct PrefixPickerView: View {
             List {
                 Section("Пользовательский префикс") {
                     TextField("Введите префикс", text: $customPrefix)
-                        .onChange(of: customPrefix) { newValue in
+                        .onChange(of: customPrefix) { _, newValue in
                             if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 selectedPrefix = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
                                 isCustomPrefixSelected = true
