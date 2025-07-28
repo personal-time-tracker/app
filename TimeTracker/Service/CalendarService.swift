@@ -196,9 +196,9 @@ class CalendarService {
         }
     }
     
-    func startNewSession(title: String, calendarId: String, duration: TimeInterval) {
+    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {
         // Запоминаем точное время начала новой сессии
-        let newSessionStartDate = Date()
+        let newSessionStartDate = startDate
         
         // Завершаем текущую сессию, устанавливая ее конец точно в момент начала новой
         endCurrentActivity(endDate: newSessionStartDate)

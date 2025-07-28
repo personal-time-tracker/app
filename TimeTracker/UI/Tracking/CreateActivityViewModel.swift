@@ -14,6 +14,7 @@ class CreateActivityViewModel {
     
     var hours: Int = 1
     var minutes: Int = 0
+    var startTime = Date()
     
     var recentActivities: [TimeActivity] = []
     
@@ -24,6 +25,10 @@ class CreateActivityViewModel {
         return recentActivities.filter {
             $0.title.lowercased().contains(activityTitle.lowercased()) && $0.title.lowercased() != activityTitle.lowercased()
         }
+    }
+    
+    var lastFinishedActivity: TimeActivity? {
+        recentActivities.first(where: { $0.endTime < Date() })
     }
     
     var calendars: [CalendarInfo] {
@@ -59,6 +64,12 @@ class CreateActivityViewModel {
         selectedCalendarId = activity.calendarId
     }
     
+    func setStartTimeFromPrevious() {
+        if let lastEndTime = lastFinishedActivity?.endTime {
+            startTime = lastEndTime
+        }
+    }
+    
     func startActivity() {
         guard canStartActivity else { return }
         let trimmedTitle = activityTitle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -66,6 +77,6 @@ class CreateActivityViewModel {
         let timeInterval = TimeInterval(hours * 3600 + minutes * 60)
         
         // Task и await здесь не нужны, так как и ViewModel, и Service - MainActor
-        calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval)
+        calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
     }
 } 

@@ -78,6 +78,20 @@ struct CreateActivityView: View {
                     }
                 }
                 
+                Section(header: Text("Время начала")) {
+                    DatePicker(
+                        "Начало",
+                        selection: $vm.startTime,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    
+                    if vm.lastFinishedActivity != nil {
+                        Button("Начать после предыдущей") {
+                            vm.setStartTimeFromPrevious()
+                        }
+                    }
+                }
+                
                 // Выбор продолжительности
                 Section(header: Text("Планируемая продолжительность")) {
                     DurationPickerView(
