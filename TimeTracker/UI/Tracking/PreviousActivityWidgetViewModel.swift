@@ -25,14 +25,7 @@ class PreviousActivityWidgetViewModel {
     
     func timeSinceEndedString(for activity: TimeActivity) -> String {
         let sinceEnd = currentDate.timeIntervalSince(activity.endTime)
-        return "Прошло: \(formatInterval(max(0, sinceEnd)))"
-    }
-    
-    private func formatInterval(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        return formatter.string(from: interval) ?? ""
+        return "Прошло: \(formatDuration(max(0, sinceEnd)))"
     }
         
     func extendSession(

@@ -33,12 +33,12 @@ class CurrentActivityWidgetViewModel {
     
     func elapsedTimeString(for activity: TimeActivity) -> String {
         let elapsed = currentDate.timeIntervalSince(activity.startTime)
-        return formatInterval(max(0, elapsed))
+        return formatDuration(max(0, elapsed))
     }
     
     func remainingTimeString(for activity: TimeActivity) -> String {
         let remaining = activity.endTime.timeIntervalSince(currentDate)
-        return formatInterval(max(0, remaining))
+        return formatDuration(max(0, remaining))
     }
     
     func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
@@ -47,13 +47,6 @@ class CurrentActivityWidgetViewModel {
     
     func finishSessionNow(eventId: String) {
         calendarService.finishSessionNow(eventId: eventId)
-    }
-
-    private func formatInterval(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        return formatter.string(from: interval) ?? ""
     }
 
     deinit {

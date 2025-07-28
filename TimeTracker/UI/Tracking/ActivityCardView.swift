@@ -18,9 +18,26 @@ struct ActivityCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Информация о занятии
             VStack(alignment: .leading) {
-                Text(activity.title)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                HStack {
+                    Text(activity.title)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
+                    if onTimeAdjustment != nil {
+                        // Если обработчик есть, делаем кнопкой
+                        Button(action: { isShowingTimePopover = true }) {
+                            durationLabel
+                        }
+                        .popover(isPresented: $isShowingTimePopover) {
+                            timeAdjustmentPopover
+                        }
+                    } else {
+                        // Иначе просто текст
+                        durationLabel
+                    }
+                }
                 
                 Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
                     .font(.subheadline)
@@ -50,19 +67,6 @@ struct ActivityCardView: View {
                     .foregroundColor(.secondary)
                 
                 Spacer()
-                
-                if let onTimeAdjustment = onTimeAdjustment {
-                    // Если обработчик есть, делаем кнопкой
-                    Button(action: { isShowingTimePopover = true }) {
-                        durationLabel
-                    }
-                    .popover(isPresented: $isShowingTimePopover) {
-                        timeAdjustmentPopover
-                    }
-                } else {
-                    // Иначе просто текст
-                    durationLabel
-                }
             }
         }
         .padding()
@@ -105,35 +109,35 @@ struct ActivityCardView: View {
         }
         .presentationCompactAdaptation(.popover)
     }
-    
-    private func formatTimeAdjustment(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .full
-        
-        if interval > 0 {
-            return "+ \(formatter.string(from: interval) ?? "")"
-        } else {
-            return "- \(formatter.string(from: abs(interval)) ?? "")"
-        }
-    }
-    
-    private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
+}
 
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) % 3600 / 60
-        
-        if hours > 0 && minutes > 0 {
-            return "\(hours)ч \(minutes)м"
-        } else if hours > 0 {
-            return "\(hours)ч"
-        } else {
-            return "\(minutes)м"
-        }
+func formatTimeAdjustment(_ interval: TimeInterval) -> String {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute]
+    formatter.unitsStyle = .full
+    
+    if interval > 0 {
+        return "+ \(formatter.string(from: interval) ?? "")"
+    } else {
+        return "- \(formatter.string(from: abs(interval)) ?? "")"
     }
-} 
+}
+
+func formatTime(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    return formatter.string(from: date)
+}
+
+func formatDuration(_ duration: TimeInterval) -> String {
+    let hours = Int(duration) / 3600
+    let minutes = Int(duration) % 3600 / 60
+    
+    if hours > 0 && minutes > 0 {
+        return "\(hours)ч \(minutes) мин"
+    } else if hours > 0 {
+        return "\(hours)ч"
+    } else {
+        return "\(minutes) мин"
+    }
+}
