@@ -31,7 +31,7 @@ struct PreviousActivityWidgetView: View {
                 }
                 
                 // Кнопки для продления и завершения
-                VStack(spacing: 1) {
+                VStack(spacing: 10) {
                     HStack(spacing: 10) {
                         Button("+5 мин") {
                             vm.extendSession(eventId: session.id, by: 300)

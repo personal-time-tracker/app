@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CurrentActivityWidgetView: View {
+    
+    @State private var vm = CurrentActivityWidgetViewModel()
         
     var currentActivity: TimeSession?
     @Binding var isShowNewSessionSheet: Bool
@@ -27,7 +29,7 @@ struct CurrentActivityWidgetView: View {
                             .fontWeight(.bold)
                         
                         // Время начала и окончания
-                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime ?? Date()))")
+                        Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -57,18 +59,34 @@ struct CurrentActivityWidgetView: View {
                 .cornerRadius(12)
                 
                 // Кнопка действия
-                Button {
-                    isShowNewSessionSheet = true
-                } label: {
-                    HStack {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                        Text("Сменить занятие")
+                HStack(spacing: 8) {
+                    Button {
+                        isShowNewSessionSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                            Text("Сменить")
+                        }
+                        .fontWeight(.medium)
+                        .padding()
                     }
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
+                    .buttonStyle(.borderedProminent)
+                    
+                    if let currentActivity {
+                        Button {
+                            vm.finishSessionNow(eventId: currentActivity.id)
+                        } label: {
+                            HStack {
+                                Image(systemName: "stop.fill")
+                                Text("Завершить")
+                            }
+                            .fontWeight(.medium)
+                            .padding()
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
                 
             } else {
                 Button {

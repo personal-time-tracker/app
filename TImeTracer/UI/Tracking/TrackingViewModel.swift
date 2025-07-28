@@ -12,7 +12,7 @@ import Factory
 class TrackingViewModel {
     
     @ObservationIgnored
-    @Injected(\.calendarService) private var calendarService
+    @Injected(\.calendarService) var calendarService
     
     var currentActivity: TimeSession? {
         return calendarService.currentActivity
