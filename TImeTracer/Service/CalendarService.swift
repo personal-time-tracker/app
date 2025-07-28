@@ -30,6 +30,14 @@ class CalendarService {
         @unknown default:
             break
         }
+        
+        // Регистрируем наблюдателя за изменениями в календаре
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(calendarDidChange),
+            name: .EKEventStoreChanged,
+            object: eventStore
+        )
     }
     
     func requestAccess() {
@@ -299,5 +307,20 @@ class CalendarService {
                 category: event.calendar.title
             )
         }
+    }
+    
+    // MARK: - Calendar Synchronization
+    
+    @objc private func calendarDidChange() {
+        print("Данные календаря изменились, перезагружаю активности...")
+        // Обновления UI должны происходить в основном потоке, так как они влияют на @Observable properties
+        DispatchQueue.main.async { [weak self] in
+            // loadCurrentActivity() уже вызывает loadPreviousActivity(), так что достаточно одного вызова
+            self?.loadCurrentActivity()
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 } 
