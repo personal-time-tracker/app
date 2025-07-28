@@ -8,6 +8,10 @@
 import SwiftUI
 import AppIntents
 import BackgroundTasks
+import Factory
+import OSLog
+
+private let logger = Logger(subsystem: "TiteTracker", category: "Main")
 
 @main
 struct TImeTracerApp: App {
@@ -68,30 +72,58 @@ struct TImeTracerApp: App {
     }
 }
 
-// Регистрируем интенты для Shortcuts
-@available(iOS 16.0, *)
-extension TImeTracerApp: AppShortcutsProvider {
-    static var appShortcuts: [AppShortcut] {
-        AppShortcut(
-            intent: StartTimeTrackingIntent(),
-            phrases: [
-                "Начать трекинг времени в ${applicationName}",
-                "Запустить ${applicationName}",
-                "Начать занятие в ${applicationName}"
-            ],
-            shortTitle: "Начать трекинг",
-            systemImageName: "play.circle.fill"
-        )
-        
-        AppShortcut(
-            intent: EndTimeTrackingIntent(),
-            phrases: [
-                "Завершить трекинг времени в ${applicationName}",
-                "Остановить ${applicationName}",
-                "Завершить занятие в ${applicationName}"
-            ],
-            shortTitle: "Завершить трекинг",
-            systemImageName: "stop.circle.fill"
-        )
+extension Container {
+    var calendarService: Factory<CalendarService> {
+        Factory(self) { return CalendarService() }.singleton
     }
+    
+    var alertManager: Factory<AlertManager> {
+        return Factory(self) { return AlertManager() }.singleton
+    }
+}
+
+@Observable
+class AlertManager {
+    
+    init() {
+        self.handle = { _ in }
+    }
+    
+    let handle: (AlertModel) -> Void
+    
+    func error(
+        _ error: Error,
+        title: String = "Произошла ошибка",
+        buttonText: String = "OK",
+        callback: @escaping () -> Void = {},
+        file: String = #file,
+        line: Int = #line
+    ) {
+        logger.error("\(file):\(line)\n\(error)")
+        handle(AlertModel(title: title, message: error.localizedDescription, buttonText: buttonText, callback: callback))
+    }
+    
+    func warn(
+        title: String,
+        message: String,
+        buttonText: String = "OK",
+        callback: @escaping () -> Void = {},
+        file: String = #file,
+        line: Int = #line
+    ) {
+        logger.error("\(file):\(line)\n\(title)\n\(message)")
+        handle(AlertModel(title: title, message: message, buttonText: buttonText, callback: callback))
+    }
+    
+    init(handle: @escaping (AlertModel) -> Void) {
+        self.handle = handle
+    }
+}
+
+struct AlertModel: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let buttonText: String
+    let callback: () -> Void
 }

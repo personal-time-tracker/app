@@ -1,14 +1,20 @@
 import Foundation
 import EventKit
 import Combine
+import SwiftUI
 
-class CalendarService: ObservableObject {
+@Observable
+class CalendarService {
+    
+    @ObservationIgnored
     private let eventStore = EKEventStore()
-    @Published var calendars: [CalendarInfo] = []
-    @Published var currentSession: TimeSession?
     
-    private let settings = AppSettings.shared
+    var calendars: [CalendarInfo] = []
+    var currentSession: TimeSession?
     
+    @ObservationIgnored
+    @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
+        
     init() {
         let status = EKEventStore.authorizationStatus(for: .event)
         
@@ -22,13 +28,6 @@ class CalendarService: ObservableObject {
             break
         @unknown default:
             break
-        }
-        
-        // Слушаем изменения настроек
-        settings.objectWillChange.sink { [weak self] in
-            self?.objectWillChange.send()
-            self?.loadCalendars()
-            self?.loadCurrentSession()
         }
     }
     
@@ -71,7 +70,7 @@ class CalendarService: ObservableObject {
         
         // Фильтруем календари по настраиваемому префиксу
         let filteredCalendars = ekCalendars.filter { calendar in
-            calendar.title.contains(settings.calendarPrefix)
+            calendar.title.contains(calendarPrefix)
         }
         
         calendars = filteredCalendars.map { calendar in
@@ -86,7 +85,7 @@ class CalendarService: ObservableObject {
     func loadCurrentSession() {
         let now = Date()
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
-            calendar.title.contains(settings.calendarPrefix)
+            calendar.title.contains(calendarPrefix)
         }
         
         // Если нет календарей с префиксом, не показываем ничего
@@ -113,7 +112,7 @@ class CalendarService: ObservableObject {
         if let event = currentEvent {
             currentSession = TimeSession(
                 title: event.title,
-                calendarId: event.calendar.calendarIdentifier,
+                calendarName: event.calendar.title,
                 startTime: event.startDate,
                 endTime: event.endDate,
                 category: event.calendar.title
@@ -169,7 +168,7 @@ class CalendarService: ObservableObject {
         let predicate = eventStore.predicateForEvents(
             withStart: session.startTime,
             end: now.addingTimeInterval(3600),
-            calendars: [eventStore.calendar(withIdentifier: session.calendarId)].compactMap { $0 }
+            calendars: [eventStore.calendar(withIdentifier: session.calendarName)].compactMap { $0 }
         )
         
         let events = eventStore.events(matching: predicate)
@@ -186,7 +185,7 @@ class CalendarService: ObservableObject {
     func getSessions(from startDate: Date, to endDate: Date) -> [TimeSession] {
         // Получаем только календари с настраиваемым префиксом
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
-            calendar.title.contains(settings.calendarPrefix)
+            calendar.title.contains(calendarPrefix)
         }
         
         let predicate = eventStore.predicateForEvents(
@@ -199,7 +198,7 @@ class CalendarService: ObservableObject {
         return events.map { event in
             TimeSession(
                 title: event.title,
-                calendarId: event.calendar.calendarIdentifier,
+                calendarName: event.calendar.title,
                 startTime: event.startDate,
                 endTime: event.endDate,
                 category: event.calendar.title

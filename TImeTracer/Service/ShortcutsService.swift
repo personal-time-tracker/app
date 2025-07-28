@@ -18,16 +18,17 @@ struct StartTimeTrackingIntent: AppIntent {
         self.calendarId = calendarId
     }
     
+    @MainActor
     func perform() async throws -> some IntentResult {
-        // Отправляем уведомление в приложение
-        NotificationCenter.default.post(
-            name: .startTimeTracking,
-            object: nil,
-            userInfo: [
-                "activityTitle": activityTitle,
-                "calendarId": calendarId
-            ]
-        )
+        let calendarService = CalendarService()
+        let sharedDefaults = UserDefaults(suiteName: "group.com.timetracer.app")
+        let calendarIdToUse = self.calendarId ?? sharedDefaults?.string(forKey: "selectedCalendarId") ?? ""
+        
+        guard !calendarIdToUse.isEmpty else {
+            return .result()
+        }
+        
+        calendarService.startNewSession(title: activityTitle, calendarId: calendarIdToUse)
         
         return .result()
     }
@@ -37,8 +38,11 @@ struct EndTimeTrackingIntent: AppIntent {
     static var title: LocalizedStringResource = "Завершить трекинг времени"
     static var description: LocalizedStringResource = "Завершает текущую сессию трекинга времени"
     
+    @MainActor
     func perform() async throws -> some IntentResult {
-        NotificationCenter.default.post(name: .endTimeTracking, object: nil)
+        let calendarService = CalendarService()
+        calendarService.endCurrentSession()
+        
         return .result()
     }
 }

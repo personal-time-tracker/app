@@ -1,8 +1,12 @@
 import SwiftUI
 import Charts
+import Factory
 
-struct AnalyticsView: View {
-    @ObservedObject var calendarService: CalendarService
+struct AnalyticsTab: View {
+    
+    @ObservationIgnored
+    @Injected(\.calendarService) private var calendarService
+
     @State private var selectedPeriod: AnalyticsPeriod = .week
     @State private var sessions: [TimeSession] = []
     
@@ -314,5 +318,5 @@ struct CategoryData: Identifiable {
 }
 
 #Preview {
-    AnalyticsView(calendarService: CalendarService())
-} 
+    AnalyticsTab()
+}

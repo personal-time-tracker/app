@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B5A75D5C2E37085700B9DB3F /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = B5A75D5B2E37085700B9DB3F /* Factory */; };
 		B5E723EC2E35D3B900022C8D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5E723EB2E35D3B900022C8D /* WidgetKit.framework */; };
 		B5E723EE2E35D3B900022C8D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5E723ED2E35D3B900022C8D /* SwiftUI.framework */; };
 		B5E723FF2E35D3BA00022C8D /* TimeTracerWidgetExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B5E723E92E35D3B900022C8D /* TimeTracerWidgetExtensionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -62,8 +63,11 @@
 		B5E724182E35D86100022C8D /* Exceptions for "TImeTracer" folder in "TimeTracerWidgetExtensionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Shared/AppStorageService.swift,
-				Shared/SharedModels.swift,
+				Model/CalendarInfo.swift,
+				Model/TimeSession.swift,
+				Service/AppStorageService.swift,
+				Service/CalendarService.swift,
+				Service/ShortcutsService.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTracerWidgetExtensionExtension */;
 		};
@@ -94,6 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A75D5C2E37085700B9DB3F /* Factory in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,6 +165,7 @@
 			);
 			name = TImeTracker;
 			packageProductDependencies = (
+				B5A75D5B2E37085700B9DB3F /* Factory */,
 			);
 			productName = TImeTracer;
 			productReference = B5E723AD2E35C06A00022C8D /* TImeTracker.app */;
@@ -214,6 +220,9 @@
 			);
 			mainGroup = B5E723A42E35C06A00022C8D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B5A75D5A2E37085700B9DB3F /* XCRemoteSwiftPackageReference "Factory" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5E723AE2E35C06A00022C8D /* Products */;
 			projectDirPath = "";
@@ -570,6 +579,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B5A75D5A2E37085700B9DB3F /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5A75D5B2E37085700B9DB3F /* Factory */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5A75D5A2E37085700B9DB3F /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = Factory;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5E723A52E35C06A00022C8D /* Project object */;
 }

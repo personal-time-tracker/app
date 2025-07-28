@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct CurrentActivityWidget: View {
-    @ObservedObject var calendarService: CalendarService
-    @State private var showingActivitySheet = false
+        
+    @Binding var currentSession: TimeSession?
+    @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
         VStack(spacing: 16) {
@@ -17,7 +18,7 @@ struct CurrentActivityWidget: View {
             }
             
             // Текущее занятие
-            if let currentSession = calendarService.currentSession {
+            if let currentSession = currentSession {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(currentSession.title)
                         .font(.title2)
@@ -27,7 +28,7 @@ struct CurrentActivityWidget: View {
                     HStack {
                         Image(systemName: "calendar")
                             .foregroundColor(.secondary)
-                        Text(getCalendarTitle(for: currentSession.calendarId))
+                        Text(currentSession.calendarName)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
@@ -45,48 +46,43 @@ struct CurrentActivityWidget: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
+                
+                // Кнопка действия
+                Button {
+                    isShowNewSessionSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                        Text("Сменить занятие")
+                    }
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                }
+                .buttonStyle(.borderedProminent)
+                
             } else {
-                VStack(spacing: 8) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.blue)
-                    Text("Начать занятие")
-                        .font(.headline)
-                        .foregroundColor(.blue)
+                Button {
+                    isShowNewSessionSheet = true
+                } label: {
+                    VStack(spacing: 8) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.blue)
+                        Text("Начать занятие")
+                            .font(.headline)
+                            .foregroundColor(.blue)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(12)
             }
-            
-            // Кнопка действия
-            Button(action: {
-                showingActivitySheet = true
-            }) {
-                HStack {
-                    Image(systemName: calendarService.currentSession != nil ? "arrow.triangle.2.circlepath" : "play.fill")
-                    Text(calendarService.currentSession != nil ? "Сменить занятие" : "Начать занятие")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.blue)
-                .cornerRadius(12)
-            }
         }
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(16)
-        .shadow(radius: 2)
-        .sheet(isPresented: $showingActivitySheet) {
-            ActivitySelectionView(calendarService: calendarService)
-        }
-    }
-    
-    private func getCalendarTitle(for id: String) -> String {
-        return calendarService.calendars.first { $0.id == id }?.title ?? "Неизвестный календарь"
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -101,6 +97,31 @@ struct CurrentActivityWidget: View {
     }
 }
 
-#Preview {
-    CurrentActivityWidget(calendarService: CalendarService())
-} 
+#Preview("With data") {
+    VStack {
+        CurrentActivityWidget(
+            currentSession: .constant(TimeSession(
+                title: "Занятие",
+                calendarName: "⏱️ Работа",
+                startTime: Date.now,
+                category: nil
+            )),
+            isShowNewSessionSheet: .constant(true)
+        )
+        Spacer()
+    }
+    .padding()
+    .background(Color(.systemGroupedBackground))
+}
+
+#Preview("Without data") {
+    VStack {
+        CurrentActivityWidget(
+            currentSession: .constant(nil),
+            isShowNewSessionSheet: .constant(true)
+        )
+        Spacer()
+    }
+    .padding()
+    .background(Color(.systemGroupedBackground))
+}

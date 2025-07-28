@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var settings = AppSettings.shared
+
     @Environment(\.dismiss) private var dismiss
     @State private var showingPrefixPicker = false
+    
+    @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
     
     var body: some View {
         NavigationView {
@@ -16,7 +18,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Текущий префикс")
                         Spacer()
-                        Button(settings.calendarPrefix) {
+                        Button(calendarPrefix) {
                             showingPrefixPicker = true
                         }
                         .foregroundColor(.blue)
@@ -24,13 +26,13 @@ struct SettingsView: View {
                 }
                 
                 Section("Примеры") {
-                    Text("С префиксом \"\(settings.calendarPrefix)\" будут учитываться календари с любым из следующих форматов:")
+                    Text("С префиксом \"\(calendarPrefix)\" будут учитываться календари с любым из следующих форматов:")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Text("\(settings.calendarPrefix) Работа")
-                    Text("Учеба \(settings.calendarPrefix)") 
-                    Text("Тайм \(settings.calendarPrefix) Менеджмент")
+                    Text("\(calendarPrefix) Работа")
+                    Text("Учеба \(calendarPrefix)") 
+                    Text("Тайм \(calendarPrefix) Менеджмент")
                 }
             }
             .navigationTitle("Настройки")
@@ -43,7 +45,7 @@ struct SettingsView: View {
                 }
             }
             .sheet(isPresented: $showingPrefixPicker) {
-                PrefixPickerView(selectedPrefix: $settings.calendarPrefix)
+                PrefixPickerView(selectedPrefix: $calendarPrefix)
             }
         }
     }
@@ -55,6 +57,17 @@ struct PrefixPickerView: View {
     @State private var customPrefix = ""
     @State private var isCustomPrefixSelected = false
     @State private var originalPrefix = ""
+    
+    private let defaultPrefixes = [
+        "⏱️",
+        "📅",
+        "🕐",
+        "⏰",
+        "TIME",
+        "TRACK",
+        "[TIME]",
+        "[TRACK]"
+    ]
     
     var body: some View {
         NavigationView {
@@ -73,7 +86,7 @@ struct PrefixPickerView: View {
                 }
                 
                 Section("Предустановленные") {
-                    ForEach(AppSettings.defaultPrefixes, id: \.self) { prefix in
+                    ForEach(defaultPrefixes, id: \.self) { prefix in
                         Button(action: {
                             selectedPrefix = prefix
                             isCustomPrefixSelected = false
@@ -111,7 +124,7 @@ struct PrefixPickerView: View {
                 originalPrefix = selectedPrefix
                 
                 // Инициализируем поле пользовательского префикса
-                if !AppSettings.defaultPrefixes.contains(selectedPrefix) {
+                if !defaultPrefixes.contains(selectedPrefix) {
                     customPrefix = selectedPrefix
                     isCustomPrefixSelected = true
                 }

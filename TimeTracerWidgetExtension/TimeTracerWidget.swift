@@ -21,14 +21,6 @@ struct TimeTracerWidgetView: View {
         VStack(spacing: 8) {
             // Заголовок и время обновления
             HStack {
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.fill")
-                        .foregroundColor(.blue)
-                    Text("Сейчас")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                }
                 Spacer()
                 Text(entry.date, style: .time)
                     .font(.caption2)
@@ -70,7 +62,9 @@ struct TimeTracerWidgetView: View {
             Spacer()
         }
         .padding()
-        .background(Color(.systemBackground))
+        .containerBackground(for: .widget) {
+            Color(.systemBackground)
+        }
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -96,7 +90,7 @@ struct TimeTracerTimelineProvider: TimelineProvider {
             date: Date(),
             currentSession: TimeSession(
                 title: "Работа",
-                calendarId: "test",
+                calendarName: "test",
                 startTime: Date().addingTimeInterval(-3600),
                 endTime: nil,
                 category: "Работа"
@@ -118,7 +112,7 @@ struct TimeTracerTimelineProvider: TimelineProvider {
             currentSession: currentSession
         )
         
-        // Обновляем каждые 5 секунд (для дебага поставим 5 секунд)
+        // Обновляем каждые 5 секунд
         let nextUpdate = Calendar.current.date(byAdding: .second, value: 5, to: Date()) ?? Date()
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         
@@ -134,7 +128,7 @@ struct TimeTracerTimelineProvider: TimelineProvider {
         date: Date(),
         currentSession: TimeSession(
             title: "Работа",
-            calendarId: "test",
+            calendarName: "test",
             startTime: Date().addingTimeInterval(-3600),
             endTime: nil,
             category: "Работа"
