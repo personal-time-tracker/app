@@ -9,6 +9,7 @@ class HistoryViewModel {
     
     var sessionsByDate: [Date: [TimeSession]] = [:]
     
+    
     var sortedDates: [Date] {
         sessionsByDate.keys.sorted(by: { $0 > $1 })
     }
