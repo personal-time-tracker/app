@@ -9,8 +9,8 @@ struct CreateActivityView: View {
     @State private var isSuggestionsExpanded = false
     
     var body: some View {
-        Form {
-                
+        NavigationView {
+            Form {
                 Section {
                     TextField("Название занятия", text: $vm.activityTitle)
                         .focused($isTitleFieldFocused)
@@ -49,7 +49,7 @@ struct CreateActivityView: View {
                         }
                     }
                 }
-
+                
                 // Выбор календаря
                 Section(
                     footer:
@@ -100,7 +100,7 @@ struct CreateActivityView: View {
                     )
                     .frame(height: 150) // Ограничиваем высоту, чтобы выглядело аккуратно
                 }
-                            
+                
                 // Кнопка начала
                 Button(action: {
                     vm.startActivity()
@@ -115,23 +115,24 @@ struct CreateActivityView: View {
                 }
                 .disabled(!vm.canStartActivity)
             }
+            .navigationTitle("Новое занятие")
             .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    
-                    Button("Далее") {
-                        isTitleFieldFocused = false
+                ToolbarItem {
+                    Button("Отмена") {
+                        dismiss()
                     }
                 }
             }
-            .navigationTitle("Новое занятие")
             .sheet(isPresented: $vm.showingCreateCalendarSheet) {
-                CreateCalendarView()
+                NavigationStack {
+                    CreateCalendarView()
+                }
             }
             .onAppear {
                 vm.refreshCalendarsIfNeeded()
                 isTitleFieldFocused = true
             }
+        }
     }
     
     private var selectedCalendarTitle: String {

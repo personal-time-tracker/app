@@ -9,7 +9,7 @@ struct PreviousActivityWidgetView: View {
     var body: some View {
         // Показываем виджет только если есть последняя завершенная сессия
         if let session = previousActivity {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
                 // Заголовок
                 HStack {
                     Image(systemName: "arrow.backward.circle.fill")
@@ -21,100 +21,60 @@ struct PreviousActivityWidgetView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    // Информация о занятии
                     NavigationLink(value: TrackingTabListRoute.editActivity(session)) {
-                        VStack(alignment: .leading) {
-                            Text(session.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                                        
-                            // Календарь
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .foregroundColor(.secondary)
-                                Text(session.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                
-                                Spacer()
-                                
-                                Text(formatDuration(session.duration))
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.blue)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(8)
-                            }
-                        }
+                        ActivityCardView(
+                            activity: session,
+                            progress: 1.0, // Для предыдущей всегда полная
+                            progressColor: .red,
+                            leftLabel: "",
+                            rightLabel: vm.timeSinceEndedString(for: session)
+                        )
                     }
                     .buttonStyle(.plain)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
                     
-                // Кнопки для продления и завершения
-                VStack(spacing: 10) {
-                    
-                    Text("Продолжить и добавить время:")
-                    
-                    HStack(spacing: 10) {
-                        Button("+5 мин") {
-                            vm.extendSession(eventId: session.id, by: 300)
-                        }
-                        .buttonStyle(ExtensionButtonStyle())
+                    // Кнопки для продления и завершения
+                    VStack(spacing: 10) {
                         
-                        Button("+15 мин") {
-                            vm.extendSession(eventId: session.id, by: 900)
-                        }
-                        .buttonStyle(ExtensionButtonStyle())
+                        Text("Продолжить и добавить время:")
+                            .font(.caption)
                         
-                        Button("+30 мин") {
-                            vm.extendSession(eventId: session.id, by: 1800)
+                        HStack(spacing: 10) {
+                            Button("+5 мин") {
+                                vm.extendSession(eventId: session.id, by: 300)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
+                            
+                            Button("+15 мин") {
+                                vm.extendSession(eventId: session.id, by: 900)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
+                            
+                            Button("+30 мин") {
+                                vm.extendSession(eventId: session.id, by: 1800)
+                            }
+                            .buttonStyle(ExtensionButtonStyle())
                         }
-                        .buttonStyle(ExtensionButtonStyle())
+                        .fixedSize(horizontal: false, vertical: true)
+                        
+                        Button(action: {
+                            vm.finishSessionNow(eventId: session.id)
+                        }) {
+                            Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(10)
+                                .background(Color.red.opacity(0.15))
+                                .foregroundColor(.red)
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .fixedSize(horizontal: false, vertical: true)
-                    
-                    Button(action: {
-                        vm.finishSessionNow(eventId: session.id)
-                    }) {
-                        Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding(10)
-                            .background(Color.red.opacity(0.15))
-                            .foregroundColor(.red)
-                            .cornerRadius(10)
-                    }
-                    .buttonStyle(.plain) // Используем plain, чтобы наш фон применился корректно
                 }
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(16)
         }
-    }
-    
-    // Хелпер для форматирования времени
-    private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
-
-    // Хелпер для форматирования времени
-    private func format(duration: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        return formatter.string(from: duration) ?? "0m"
     }
 }
 
@@ -135,9 +95,17 @@ struct ExtensionButtonStyle: ButtonStyle {
 
 // Preview
 struct PreviousActivityWidget_Previews: PreviewProvider {
-    static var previews: some View {      
+    static var previews: some View {
         return PreviousActivityWidgetView(
-            previousActivity: nil
+            previousActivity: TimeActivity(
+                id: UUID().uuidString,
+                title: "Прошлый проект",
+                calendarId: "1",
+                calendarName: "Работа",
+                startTime: Date().addingTimeInterval(-7200),
+                endTime: Date().addingTimeInterval(-3600),
+                category: "Работа"
+            )
         )
             .padding()
             .background(Color(.systemGroupedBackground))

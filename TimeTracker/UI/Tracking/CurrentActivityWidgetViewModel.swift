@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Factory
 
 @Observable
@@ -18,7 +19,6 @@ class CurrentActivityWidgetViewModel {
     var currentDate = Date()
     
     init() {
-        // Таймер для обновления UI каждую секунду
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.currentDate = Date()
         }
@@ -28,7 +28,7 @@ class CurrentActivityWidgetViewModel {
         let elapsed = currentDate.timeIntervalSince(activity.startTime)
         let total = activity.endTime.timeIntervalSince(activity.startTime)
         guard total > 0 else { return 0 }
-        return min(max(elapsed / total, 0), 1) // От 0 до 1
+        return min(max(elapsed / total, 0), 1)
     }
     
     func elapsedTimeString(for activity: TimeActivity) -> String {
@@ -41,13 +41,6 @@ class CurrentActivityWidgetViewModel {
         return formatInterval(max(0, remaining))
     }
     
-    private func formatInterval(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        return formatter.string(from: interval) ?? ""
-    }
-    
     func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
         calendarService.updateActivityEndTime(for: activity, by: timeInterval)
     }
@@ -55,7 +48,14 @@ class CurrentActivityWidgetViewModel {
     func finishSessionNow(eventId: String) {
         calendarService.finishSessionNow(eventId: eventId)
     }
-    
+
+    private func formatInterval(_ interval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .abbreviated
+        return formatter.string(from: interval) ?? ""
+    }
+
     deinit {
         timer?.invalidate()
     }

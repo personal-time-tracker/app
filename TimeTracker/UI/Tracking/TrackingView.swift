@@ -11,6 +11,7 @@ import Factory
 struct TrackingView: View {
     
     @State private var vm = TrackingViewModel()
+    @Environment(PathSharedState.self) private var path
     
     @ObservationIgnored
     @Injected(\.alertManager) var alertManager
@@ -44,9 +45,7 @@ struct TrackingView: View {
                 }
             }
             .sheet(isPresented: $vm.isShowNewSessionSheet) {
-                NavigationStack {
-                    CreateActivityView()
-                }
+                CreateActivityView()
             }
         }
         .background(Color(.systemGroupedBackground))

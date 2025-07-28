@@ -21,68 +21,20 @@ struct CurrentActivityWidgetView: View {
             }
             
             // Текущее занятие
-            if let currentSession = currentActivity {
-                NavigationLink(value: TrackingTabListRoute.editActivity(currentSession)) {
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        
-                        // Информация о занятии
-                        VStack(alignment: .leading) {
-                            Text(currentSession.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            // Время начала и окончания + длительность
-                            Text("\(formatTime(currentSession.startTime)) - \(formatTime(currentSession.endTime))")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+            if let activity = currentActivity {
+                NavigationLink(value: TrackingTabListRoute.editActivity(activity)) {
+                    ActivityCardView(
+                        activity: activity,
+                        progress: vm.progress(for: activity),
+                        progressColor: .blue,
+                        leftLabel: vm.elapsedTimeString(for: activity),
+                        rightLabel: vm.remainingTimeString(for: activity),
+                        onTimeAdjustment: { timeInterval in
+                            vm.updateEndTime(for: activity, by: timeInterval)
                         }
-                        
-                        // Полоса прогресса
-                        VStack(spacing: 4) {
-                            ProgressView(value: vm.progress(for: currentSession))
-                                .tint(.blue)
-                            
-                            HStack {
-                                Text(vm.elapsedTimeString(for: currentSession))
-                                Spacer()
-                                Text(vm.remainingTimeString(for: currentSession))
-                            }
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        }
-                        
-                        // Календарь
-                        HStack {
-                            Image(systemName: "calendar")
-                                .foregroundColor(.secondary)
-                            Text(currentSession.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Button {
-                                isShowingTimePopover = true
-                            } label: {
-                                Text(formatDuration(currentSession.duration))
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.blue)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(8)
-                            }
-                            .popover(isPresented: $isShowingTimePopover) {
-                                timeAdjustmentPopover(for: currentSession)
-                            }
-                        }
-                    }
+                    )
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .buttonStyle(.plain)
                 
                 // Кнопка действия
                 HStack(spacing: 8) {
@@ -137,47 +89,6 @@ struct CurrentActivityWidgetView: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
     }
-
-    private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
-    
-    @ViewBuilder
-    private func timeAdjustmentPopover(for activity: TimeActivity) -> some View {
-        VStack(spacing: 0) {
-            let adjustments: [TimeInterval] = [3600, 1800, 900, -900] // +1h, +30m, +15m, -15m
-            
-            ForEach(adjustments, id: \.self) { interval in
-                Button {
-                    vm.updateEndTime(for: activity, by: interval)
-                    isShowingTimePopover = false
-                } label: {
-                    Text(formatTimeAdjustment(interval))
-                        .frame(maxWidth: .infinity)
-                }
-                .padding()
-                
-                if interval != adjustments.last {
-                    Divider()
-                }
-            }
-        }
-        .presentationCompactAdaptation(.popover)
-    }
-    
-    private func formatTimeAdjustment(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .full
-        
-        if interval > 0 {
-            return "+ \(formatter.string(from: interval) ?? "")"
-        } else {
-            return "- \(formatter.string(from: abs(interval)) ?? "")"
-        }
-    }
 }
 
 #Preview("With data") {
@@ -210,17 +121,4 @@ struct CurrentActivityWidgetView: View {
     }
     .padding()
     .background(Color(.systemGroupedBackground))
-}
-
-func formatDuration(_ duration: TimeInterval) -> String {
-    let hours = Int(duration) / 3600
-    let minutes = Int(duration) % 3600 / 60
-    
-    if hours > 0 && minutes > 0 {
-        return "\(hours)ч \(minutes)м"
-    } else if hours > 0 {
-        return "\(hours)ч"
-    } else {
-        return "\(minutes)м"
-    }
 }
