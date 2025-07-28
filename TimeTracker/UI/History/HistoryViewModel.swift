@@ -24,6 +24,8 @@ class HistoryViewModel {
         
         sessionsByDate = Dictionary(grouping: sessions, by: { session in
             Calendar.current.startOfDay(for: session.startTime)
-        })
+        }).mapValues { sessions in
+            sessions.sorted(by: { $0.startTime > $1.startTime })
+        }
     }
 }

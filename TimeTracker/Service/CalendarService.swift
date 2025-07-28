@@ -297,16 +297,54 @@ class CalendarService {
         )
         
         let events = eventStore.events(matching: predicate)
-        return events.map { event in
-            TimeSession(
-                id: event.eventIdentifier,
-                title: event.title,
-                calendarName: event.calendar.title,
-                startTime: event.startDate,
-                endTime: event.endDate,
-                category: event.calendar.title
-            )
+        var resultingSessions: [TimeSession] = []
+
+        for event in events {
+            guard let eventEndDate = event.endDate else { continue } // Пропускаем сессии без времени окончания
+
+            let calendar = Calendar.current
+            let eventStartDate = event.startDate!
+
+            // Если сессия не пересекает полночь, просто добавляем ее
+            if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
+                if eventStartDate != eventEndDate { // Исключаем события с нулевой длительностью на границе дня
+                    resultingSessions.append(TimeSession(
+                        id: event.eventIdentifier,
+                        title: event.title,
+                        calendarName: event.calendar.title,
+                        startTime: eventStartDate,
+                        endTime: eventEndDate,
+                        category: event.calendar.title
+                    ))
+                }
+            } else {
+                // Если сессия пересекает полночь, делим ее на части
+                var currentDate = eventStartDate
+                var partIndex = 1
+
+                while currentDate < eventEndDate {
+                    let startOfNextDay = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate)!)
+                    let endOfThisSegment = min(startOfNextDay, eventEndDate)
+
+                    if currentDate < endOfThisSegment { // Добавляем сегмент, только если он имеет продолжительность
+                        let sessionPart = TimeSession(
+                            id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
+                            title: event.title,
+                            calendarName: event.calendar.title,
+                            startTime: currentDate,
+                            endTime: endOfThisSegment,
+                            category: event.calendar.title
+                        )
+                        resultingSessions.append(sessionPart)
+                    }
+
+                    currentDate = endOfThisSegment
+                    partIndex += 1
+                }
+            }
         }
+        
+        return resultingSessions
     }
     
     // MARK: - Calendar Synchronization
