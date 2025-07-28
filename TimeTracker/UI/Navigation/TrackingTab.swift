@@ -9,6 +9,7 @@ import SwiftUI
 
 enum TrackingTabListRoute: Hashable {
     case settings
+    case editActivity(TimeActivity)
 }
 
 struct TrackingTab: View {
@@ -20,7 +21,10 @@ struct TrackingTab: View {
             TrackingView()
                 .navigationDestination(for: TrackingTabListRoute.self) { screen in
                     switch screen {
-                    case .settings: SettingsView()
+                    case .settings:
+                        SettingsView()
+                    case .editActivity(let activity):
+                        EditActivityView(activity: activity)
                     }
                 }
         }

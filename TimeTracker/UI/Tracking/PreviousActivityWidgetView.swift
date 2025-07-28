@@ -20,21 +20,45 @@ struct PreviousActivityWidgetView: View {
                     Spacer()
                 }
                 
-                // Информация о занятии
-                VStack(alignment: .leading) {
-                    Text(session.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Длительность: \(format(duration: session.duration))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 12) {
+                    // Информация о занятии
+                    NavigationLink(value: TrackingTabListRoute.editActivity(session)) {
+                        VStack(alignment: .leading) {
+                            Text(session.title)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Text("\(formatTime(session.startTime)) - \(formatTime(session.endTime))")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                                        
+                            // Календарь
+                            HStack {
+                                Image(systemName: "calendar")
+                                    .foregroundColor(.secondary)
+                                Text(session.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                Spacer()
+                                
+                                Text(formatDuration(session.duration))
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.blue)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
-                
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                    
                 // Кнопки для продления и завершения
                 VStack(spacing: 10) {
                     
@@ -73,7 +97,7 @@ struct PreviousActivityWidgetView: View {
                 }
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Color(.systemBackground))
             .cornerRadius(16)
         }
     }

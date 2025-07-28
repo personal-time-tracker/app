@@ -1,6 +1,6 @@
 import Foundation
 
-struct TimeActivity: Identifiable, Codable {
+struct TimeActivity: Identifiable, Codable, Hashable {
     let id: String
     var title: String
     var calendarId: String
