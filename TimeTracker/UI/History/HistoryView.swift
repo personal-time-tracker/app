@@ -1,42 +1,70 @@
 import SwiftUI
 
+enum HistoryViewType: String, CaseIterable {
+    case list = "Список"
+    case chart = "График"
+}
+
 struct HistoryView: View {
     
     @State private var vm = HistoryViewModel()
-    @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
+    @State private var selectedView: HistoryViewType = .list
+    @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(vm.sortedDates, id: \.self) { date in
-                    Section(header: Text(date, style: .date)) {
-                        if let activities = vm.activitiesByDate[date] {
-                            ForEach(activities) { activity in
-                                NavigationLink(destination: EditActivityView(activity: activity)) {
-                                    HStack {
-                                        VStack(alignment: .leading) {
-                                            Text(activity.title)
-                                                .font(.headline)
-                                            Text(activity.calendarName.replacingOccurrences(of: "\(calendarPrefix)", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                            Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                        VStack(alignment: .trailing) {
-                                            Text(formatDuration(activity.duration))
-                                                .font(.headline)
-                                            Text(formatPercentage(activity.duration))
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
+            VStack {
+                Picker("Вид", selection: $selectedView) {
+                    ForEach(HistoryViewType.allCases, id: \.self) { viewType in
+                        Text(viewType.rawValue).tag(viewType)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                
+                if selectedView == .list {
+                    List {
+                        ForEach(vm.sortedDates, id: \.self) { date in
+                            Section(header: Text(date, style: .date)) {
+                                if let activities = vm.activitiesByDate[date] {
+                                    ForEach(activities) { activity in
+                                        NavigationLink(destination: EditActivityView(activity: activity)) {
+                                            HStack {
+                                                VStack(alignment: .leading) {
+                                                    Text(activity.title)
+                                                        .font(.headline)
+                                                    Text(activity.calendarName.replacingOccurrences(of: "⏱️ ", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                    Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
+                                                        .font(.caption)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                                Spacer()
+                                                VStack(alignment: .trailing) {
+                                                    Text(formatDuration(activity.duration))
+                                                        .font(.headline)
+                                                    Text(formatPercentage(activity.duration))
+                                                        .font(.caption2)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    HorizontalDatePickerView(
+                        selectedDate: $selectedDate,
+                        dates: vm.sortedDates
+                    )
+                    
+                    TimelineView(
+                        activities: vm.activitiesByDate[selectedDate] ?? [],
+                        selectedDate: selectedDate
+                    )
                 }
             }
             .navigationTitle("История")
