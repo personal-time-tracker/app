@@ -25,7 +25,7 @@ class PreviousActivityWidgetViewModel {
     
     func timeSinceEndedString(for activity: TimeActivity) -> String {
         let sinceEnd = currentDate.timeIntervalSince(activity.endTime)
-        return "Прошло: \(formatDuration(max(0, sinceEnd)))"
+        return "От завершения прошло: \(formatDuration(max(0, sinceEnd)))"
     }
         
     func extendSession(
