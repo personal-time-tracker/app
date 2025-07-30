@@ -14,58 +14,58 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Picker("Вид", selection: $selectedView) {
-                    ForEach(HistoryViewType.allCases, id: \.self) { viewType in
-                        Text(viewType.rawValue).tag(viewType)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
+//                Picker("Вид", selection: $selectedView) {
+//                    ForEach(HistoryViewType.allCases, id: \.self) { viewType in
+//                        Text(viewType.rawValue).tag(viewType)
+//                    }
+//                }
+//                .pickerStyle(.segmented)
+//                .padding(.horizontal)
                 
-                if selectedView == .list {
-                    List {
-                        ForEach(vm.sortedDates, id: \.self) { date in
-                            Section(header: Text(date, style: .date)) {
-                                if let activities = vm.activitiesByDate[date] {
-                                    ForEach(activities) { activity in
-                                        NavigationLink(destination: EditActivityView(activity: activity)) {
-                                            HStack {
-                                                VStack(alignment: .leading) {
-                                                    Text(activity.title)
-                                                        .font(.headline)
-                                                    Text(activity.calendarName.replacingOccurrences(of: "⏱️ ", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                    Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
-                                                        .font(.caption)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                Spacer()
-                                                VStack(alignment: .trailing) {
-                                                    Text(formatDuration(activity.duration))
-                                                        .font(.headline)
-                                                    Text(formatPercentage(activity.duration))
-                                                        .font(.caption2)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    HorizontalDatePickerView(
-                        selectedDate: $selectedDate,
-                        dates: vm.sortedDates
-                    )
+//                if selectedView == .list {
+//                    List {
+//                        ForEach(vm.sortedDates, id: \.self) { date in
+//                            Section(header: Text(date, style: .date)) {
+//                                if let activities = vm.activitiesByDate[date] {
+//                                    ForEach(activities) { activity in
+//                                        NavigationLink(destination: EditActivityView(activity: activity)) {
+//                                            HStack {
+//                                                VStack(alignment: .leading) {
+//                                                    Text(activity.title)
+//                                                        .font(.headline)
+//                                                    Text(activity.calendarName.replacingOccurrences(of: "⏱️ ", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
+//                                                        .font(.subheadline)
+//                                                        .foregroundColor(.secondary)
+//                                                    Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
+//                                                        .font(.caption)
+//                                                        .foregroundColor(.secondary)
+//                                                }
+//                                                Spacer()
+//                                                VStack(alignment: .trailing) {
+//                                                    Text(formatDuration(activity.duration))
+//                                                        .font(.headline)
+//                                                    Text(formatPercentage(activity.duration))
+//                                                        .font(.caption2)
+//                                                        .foregroundColor(.secondary)
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    HorizontalDatePickerView(
+//                        selectedDate: $selectedDate,
+//                        dates: vm.sortedDates
+//                    )
                     
                     TimelineView(
                         activities: vm.activitiesByDate[selectedDate] ?? [],
-                        selectedDate: selectedDate
+                        date: selectedDate
                     )
-                }
+//                }
             }
             .navigationTitle("История")
             .onAppear {

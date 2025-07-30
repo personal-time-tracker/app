@@ -10,45 +10,28 @@ import SwiftUI
 struct ActivityBracketView: View {
     let activity: TimeActivity
     let hourHeight: CGFloat
-    let timelineStartOffset: CGFloat
     
     private var height: CGFloat {
-        let durationInHours = max(activity.duration / 3600, 0.25) // Мин. высота
-        return durationInHours * hourHeight
-    }
-    
-    private var yOffset: CGFloat {
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: activity.startTime)
-        let timeSinceStartOfDay = activity.startTime.timeIntervalSince(startOfDay)
-        let hoursSinceStartOfDay = timeSinceStartOfDay / 3600
-        // Добавляем половину высоты линии, чтобы выровнять по центру линии
-        return (hoursSinceStartOfDay * hourHeight) + 0.5 * hourHeight
+        let minSizeInHours: CGFloat = 0.25
+        let activityDurationInHours = activity.duration / 3600
+        let ziseInHours = max(activityDurationInHours, minSizeInHours) // Мин. высота
+        return ziseInHours * hourHeight
     }
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
             BracketShape()
                 .stroke(Color.blue, lineWidth: 3)
-                .frame(width: 10)
-            
-            VStack(alignment: .leading) {
-                HStack {
-                    Text(activity.title)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                    Text(activity.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                .overlay(alignment: .topLeading) {
+                    BracketShapeDescription(
+                        activity: activity,
+                        isNeedShowDuration: true
+                    )
+                    .padding(.leading)
                 }
-                Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.leading, 18)
-        }
+            
+
         .frame(height: height, alignment: .topLeading)
-        .offset(x: timelineStartOffset, y: yOffset)
+        .padding(.leading)
     }
 }
 
@@ -68,18 +51,41 @@ struct BracketShape: Shape {
 }
 
 #Preview {
-    DayTimelineView(
-        activities: [
-            TimeActivity(
-                id: UUID().uuidString,
-                title: "Title",
-                calendarId: UUID().uuidString,
-                calendarName: "Calendar",
-                startTime: Date.now,
-                endTime: Date.now.addingTimeInterval(3600),
-                category: nil
-            )
-        ],
-        date: Date()
+    ActivityBracketView(
+        activity:
+        TimeActivity(
+            id: UUID().uuidString,
+            title: "Title",
+            calendarId: UUID().uuidString,
+            calendarName: "Calendar",
+            startTime: Date.now,
+            endTime: Date.now.addingTimeInterval(3600),
+            category: nil
+        ),
+        hourHeight: 10
     )
+}
+
+struct BracketShapeDescription: View {
+    
+    var activity: TimeActivity
+    var isNeedShowDuration: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(activity.title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Text(activity.calendarName.replacingOccurrences(of: "⏱️ ", with: ""))
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            if isNeedShowDuration {
+                Text("\(formatTime(activity.startTime)) - \(formatTime(activity.endTime))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
 }
