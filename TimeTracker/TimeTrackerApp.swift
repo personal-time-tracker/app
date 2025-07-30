@@ -20,11 +20,16 @@ struct TimeTrackerApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
     @State var alert: AlertModel?
+    
+    @Injected(\.calendarService) private var calendarService
 
         
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    calendarService.loadData()
+                }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -154,9 +159,6 @@ extension Container {
             calendarRepository: calendarRepository,
             widgetSyncController: widgetSyncController
         )
-        
-        // Подгружаем данные в стейт
-        calendarService.loadData()
         
         return Factory(self) { return calendarService }.singleton
     }
