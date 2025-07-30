@@ -92,6 +92,10 @@ class EditActivityViewModel {
         return currentActivity.startTime != lastFinishedActivity.endTime
     }
     
+    var isEndTimeInPast: Bool {
+        mode == .create && currentActivity.endTime < Date()
+    }
+    
     // MARK: - Activity Suggestions
     
     private let limitActivitiesSuggestions: Int = 5

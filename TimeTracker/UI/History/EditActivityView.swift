@@ -97,7 +97,14 @@ struct EditActivityView: View {
             if vm.mode == .create {
                 Section(
                     header: Text("Планируемая продолжительность"),
-                    footer: Text("Планируемое окончание: \(formatTime(vm.currentActivity.endTime))")
+                    footer: VStack(alignment: .leading, spacing: 10) {
+                        Text("Планируемое окончание: \(formatTime(vm.currentActivity.endTime))")
+
+                        if vm.isEndTimeInPast {
+                            Text("Время окончания находится в прошлом, событие не будет отображено в текущей активности")
+                                .foregroundColor(.orange)
+                        }
+                    }
                 ) {
                     DurationPickerView(
                         hours: $vm.durationHours,
