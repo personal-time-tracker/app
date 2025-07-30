@@ -23,14 +23,12 @@ struct TrackingView: View {
                 )
                 .padding(.horizontal)
                 
-                if vm.currentActivity == nil {
-                    // Виджет последнего занятия
-                    PreviousActivityWidgetView(
-                        namespace: animation,
-                        vm: vm
-                    )
-                    .padding(.horizontal)
-                }
+                // Виджет последнего занятия
+                PreviousActivityWidgetView(
+                    namespace: animation,
+                    vm: vm
+                )
+                .padding(.horizontal)
                 
                 Spacer()
             }

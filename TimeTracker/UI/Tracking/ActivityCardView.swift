@@ -51,7 +51,9 @@ struct ActivityCardView: View {
                 
                 HStack {
                     Text(leftLabel)
+
                     Spacer()
+
                     Text(rightLabel)
                 }
                 .font(.caption)

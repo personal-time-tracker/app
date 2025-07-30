@@ -6,65 +6,68 @@ struct PreviousActivityWidgetView: View {
     @Bindable var vm: TrackingViewModel
     
     var body: some View {
-        if let previousActivity = vm.previousActivity {
-            VStack(alignment: .leading, spacing: 16) {
-                // Заголовок
-                HStack {
-                    Image(systemName: "arrow.backward.circle.fill")
-                        .foregroundColor(.secondary)
-                    Text("Последнее занятие")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    Spacer()
-                }
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    NavigationLink(value: TrackingTabListRoute.editActivity(previousActivity)) {
-                        ActivityCardView(
-                            activity: previousActivity,
-                            progress: 1.0, // Для предыдущей всегда полная
-                            progressColor: .red,
-                            leftLabel: "",
-                            rightLabel: vm.timeSinceEndedString(for: previousActivity)
-                        )
+        if vm.currentActivity == nil {
+            if let previousActivity = vm.previousActivity {
+                VStack(alignment: .leading, spacing: 16) {
+                    // Заголовок
+                    HStack {
+                        Image(systemName: "arrow.backward.circle.fill")
+                            .foregroundColor(.secondary)
+                        Text("Последнее занятие")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
-                    .matchedGeometryEffect(id: previousActivity.id, in: namespace)
                     
-                    // Кнопки для продления и завершения
-                    VStack(spacing: 10) {
-                        
-                        Text("Продолжить и добавить время:")
-                        
-                        HStack(spacing: 10) {
-                            
-                            ForEach(vm.continueEndExtendActivitySuggestions, id: \.self) { suggestionAdjustment in
-                                Button(formatTimeAdjustment(suggestionAdjustment)) {
-                                    vm.continueAndExtendPreviousActivity(by: suggestionAdjustment)
-                                }
-                                .buttonStyle(ExtensionButtonStyle())
-                            }
-                        }
-                        .fixedSize(horizontal: false, vertical: true)
-                        
-                        Button(action: {
-                            vm.continueAndExtendPreviousActivity(by: 0)
-                        }) {
-                            Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .padding(10)
-                                .background(Color.red.opacity(0.15))
-                                .foregroundColor(.red)
-                                .cornerRadius(10)
+                    VStack(alignment: .leading, spacing: 12) {
+                        NavigationLink(value: TrackingTabListRoute.editActivity(previousActivity)) {
+                            ActivityCardView(
+                                activity: previousActivity,
+                                progress: 1.0, // Для предыдущей всегда полная
+                                progressColor: .red,
+                                leftLabel: "",
+                                rightLabel: vm.timeSinceEndedString(for: previousActivity)
+                            )
                         }
                         .buttonStyle(.plain)
+                        .matchedGeometryEffect(id: previousActivity.id, in: namespace)
+                        
+                        // Кнопки для продления и завершения
+                        VStack(spacing: 10) {
+                            
+                            Text("Продолжить и добавить время:")
+                            
+                            HStack(spacing: 10) {
+                                
+                                ForEach(vm.continueEndExtendActivitySuggestions, id: \.self) { suggestionAdjustment in
+                                    Button(formatTimeAdjustment(suggestionAdjustment)) {
+                                        vm.continueAndExtendPreviousActivity(by: suggestionAdjustment)
+                                    }
+                                    .buttonStyle(ExtensionButtonStyle())
+                                }
+                            }
+                            .fixedSize(horizontal: false, vertical: true)
+                            
+                            Button(action: {
+                                vm.continueAndExtendPreviousActivity(by: 0)
+                            }) {
+                                Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
+                                    .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(10)
+                                    .background(Color.red.opacity(0.15))
+                                    .foregroundColor(.red)
+                                    .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
+                .padding()
+                .background(Color(.systemBackground))
+                .cornerRadius(16)
+                .transition(.opacity)
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(16)
         }
     }
 }

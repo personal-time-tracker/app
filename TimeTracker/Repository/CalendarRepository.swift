@@ -138,7 +138,11 @@ class CalendarRepository {
                 id: currentEvent.eventIdentifier,
                 title: currentEvent.title,
                 calendarId: currentEvent.calendar.calendarIdentifier,
-                calendarName: currentEvent.calendar.title,
+                calendarName: currentEvent.calendar.title
+                    // Удаляем префикс
+                    .replacingOccurrences(of: calendarPrefix, with: "")
+                    // Удаляем пробелы и знаки переноса строк
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
                 startTime: currentEvent.startDate,
                 endTime: currentEvent.endDate
             )
@@ -171,7 +175,11 @@ class CalendarRepository {
                 id: $0.eventIdentifier,
                 title: $0.title,
                 calendarId: $0.calendar.calendarIdentifier,
-                calendarName: $0.calendar.title,
+                calendarName: $0.calendar.title
+                    // Удаляем префикс
+                    .replacingOccurrences(of: calendarPrefix, with: "")
+                    // Удаляем пробелы и знаки переноса строк
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
                 startTime: $0.startDate,
                 endTime: $0.endDate
             )
