@@ -4,26 +4,40 @@ import Factory
 @Observable
 class CreateCalendarViewModel {
     
-    @ObservationIgnored
-    @Injected(\.calendarService) private var calendarService
+    @ObservationIgnored @Injected(\.calendarService) private var calendarService
+    @ObservationIgnored @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
     
-    var calendarTitle: String = ""
+    var alert: AlertModel?
     
-    let calendarPrefix: String
-    
-    init() {
-        let service = Container.shared.calendarService()
-        self.calendarPrefix = service.calendarPrefix
+    var isDisableSaveButton: Bool {
+        currentCalendar.title.isEmpty
     }
     
-    var isTitleValid: Bool {
-        !calendarTitle.trimmingCharacters(in: .whitespaces).isEmpty
+    var currentCalendar: CalendarInfo
+    
+    init(currentCalendar: CalendarInfo) {
+        self.currentCalendar = currentCalendar
     }
     
     func createCalendar() {
-        guard isTitleValid else { return }
-        let title = calendarTitle.trimmingCharacters(in: .whitespaces)
-        let fullTitle = "\(calendarPrefix) \(title)"
-        calendarService.createCalendar(fullTitle: fullTitle)
+        
+        do {
+            
+            // Конвертируем в структуру создания
+            var req = currentCalendar.convertToCreateCalendar()
+            
+            // Удаляем пробелы в начале и конце
+            req.title = req.title.trimmingCharacters(in: .whitespaces)
+            
+            // Добавляем префикс
+            req.title = "\(calendarPrefix) \(req.title)"
+            
+            // Создаем календарь
+            try calendarService.createCalendar(req: req)
+            
+        } catch {
+        
+            alert = AlertModel(error: error)
+        }
     }
 } 

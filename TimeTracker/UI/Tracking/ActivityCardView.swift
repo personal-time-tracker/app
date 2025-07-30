@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ActivityCardView: View {
-    let activity: TimeActivity
+    let activity: Activity
     
     // Данные, которые передаются "сверху"
     let progress: Double
@@ -111,33 +111,4 @@ struct ActivityCardView: View {
     }
 }
 
-func formatTimeAdjustment(_ interval: TimeInterval) -> String {
-    let formatter = DateComponentsFormatter()
-    formatter.allowedUnits = [.hour, .minute]
-    formatter.unitsStyle = .full
-    
-    if interval > 0 {
-        return "+ \(formatter.string(from: interval) ?? "")"
-    } else {
-        return "- \(formatter.string(from: abs(interval)) ?? "")"
-    }
-}
 
-func formatTime(_ date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "HH:mm"
-    return formatter.string(from: date)
-}
-
-func formatDuration(_ duration: TimeInterval) -> String {
-    let hours = Int(duration) / 3600
-    let minutes = Int(duration) % 3600 / 60
-    
-    if hours > 0 && minutes > 0 {
-        return "\(hours)ч \(minutes) мин"
-    } else if hours > 0 {
-        return "\(hours)ч"
-    } else {
-        return "\(minutes) мин"
-    }
-}

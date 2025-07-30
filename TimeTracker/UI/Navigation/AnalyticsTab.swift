@@ -6,73 +6,38 @@ struct AnalyticsTab: View {
     
     @ObservationIgnored
     @Injected(\.calendarService) private var calendarService
-
-    @State private var selectedPeriod: AnalyticsPeriod = .week
-    @State private var activities: [TimeActivity] = []
     
-    enum AnalyticsPeriod: String, CaseIterable {
-        case day = "День"
-        case week = "Неделя"
-        case month = "Месяц"
-        
-        var dateInterval: DateInterval {
-            let now = Date()
-            switch self {
-            case .day:
-                return DateInterval(start: Calendar.current.startOfDay(for: now), duration: 86400)
-            case .week:
-                return DateInterval(start: Calendar.current.dateInterval(of: .weekOfYear, for: now)?.start ?? now, duration: 604800)
-            case .month:
-                return DateInterval(start: Calendar.current.dateInterval(of: .month, for: now)?.start ?? now, duration: 2592000)
-            }
-        }
-    }
+    @State private var vm = AnalyticTabViewModel()
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Период
-                    Picker("Период", selection: $selectedPeriod) {
-                        ForEach(AnalyticsPeriod.allCases, id: \.self) { period in
-                            Text(period.rawValue).tag(period)
-                        }
+        ScrollView {
+            VStack(spacing: 20) {
+                // Период
+                Picker("Период", selection: $vm.selectedPeriod) {
+                    ForEach(AnalyticsPeriod.allCases, id: \.self) { period in
+                        Text(period.rawValue).tag(period)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-                    
-                    // Общая статистика
-                    StatisticsCardsView(activities: activities)
-                    
-                    // График по дням
-                    DailyChartView(activities: activities)
-                    
-                    // Топ занятий
-                    TopActivitiesView(activities: activities)
-                    
-                    // График по категориям
-                    CategoryChartView(activities: activities)
                 }
-                .padding()
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                
+                // Общая статистика
+                StatisticsCardsView(activities: vm.activities)
+                
+                // График по дням
+                DailyChartView(activities: vm.activities)
+                
+                // Топ занятий
+                TopActivitiesView(activities: vm.activities)
             }
-            .navigationTitle("Аналитика")
-            .onAppear {
-                loadactivities()
-            }
-            .onChange(of: selectedPeriod) { _ in
-                loadactivities()
-            }
+            .padding()
         }
-    }
-    
-    private func loadactivities() {
-        let interval = selectedPeriod.dateInterval
-        activities = calendarService.getActivities(from: interval.start, to: interval.end)
+        .navigationTitle("Аналитика")
     }
 }
 
 struct StatisticsCardsView: View {
-    let activities: [TimeActivity]
+    let activities: [Activity]
     
     var body: some View {
         LazyVGrid(columns: [
@@ -115,24 +80,12 @@ struct StatisticsCardsView: View {
     
     private func formatTotalTime() -> String {
         let totalSeconds = activities.reduce(0) { $0 + $1.duration }
-        let hours = Int(totalSeconds) / 3600
-        let minutes = Int(totalSeconds) % 3600 / 60
-        
-        if hours > 0 {
-            return "\(hours)ч \(minutes)м"
-        } else {
-            return "\(minutes)м"
-        }
+        return formatDuration(totalSeconds)
     }
     
     private func formatAverageSession() -> String {
-        guard !activities.isEmpty else { return "0м" }
-        
         let totalSeconds = activities.reduce(0) { $0 + $1.duration }
-        let averageSeconds = totalSeconds / Double(activities.count)
-        let minutes = Int(averageSeconds) / 60
-        
-        return "\(minutes)м"
+        return formatDuration(totalSeconds)
     }
 }
 
@@ -165,7 +118,7 @@ struct StatCard: View {
 }
 
 struct DailyChartView: View {
-    let activities: [TimeActivity]
+    let activities: [Activity]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -212,14 +165,10 @@ struct DailyChartView: View {
     }
 }
 
-struct DailyData: Identifiable {
-    let id = UUID()
-    let day: Int
-    let hours: Double
-}
+
 
 struct TopActivitiesView: View {
-    let activities: [TimeActivity]
+    let activities: [Activity]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -254,68 +203,9 @@ struct TopActivitiesView: View {
             return ActivityStats(title: title, totalDuration: totalDuration)
         }.sorted { $0.totalDuration > $1.totalDuration }
     }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) % 3600 / 60
-        
-        if hours > 0 {
-            return "\(hours)ч \(minutes)м"
-        } else {
-            return "\(minutes)м"
-        }
-    }
 }
 
-struct ActivityStats {
-    let title: String
-    let totalDuration: TimeInterval
-}
 
-struct CategoryChartView: View {
-    let activities: [TimeActivity]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("По категориям")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            if #available(iOS 16.0, *) {
-                Chart(categoryData) { data in
-                    SectorMark(
-                        angle: .value("Время", data.hours),
-                        innerRadius: .ratio(0.6),
-                        angularInset: 2
-                    )
-                    .foregroundStyle(by: .value("Категория", data.category))
-                }
-                .frame(height: 200)
-            } else {
-                Text("Графики доступны в iOS 16+")
-                    .foregroundColor(.secondary)
-                    .frame(height: 200)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-    
-    private var categoryData: [CategoryData] {
-        let grouped = Dictionary(grouping: activities) { $0.category ?? "Без категории" }
-        return grouped.map { category, activities in
-            let totalHours = activities.reduce(0) { $0 + $1.duration } / 3600
-            return CategoryData(category: category, hours: totalHours)
-        }.sorted { $0.hours > $1.hours }
-    }
-}
-
-struct CategoryData: Identifiable {
-    let id = UUID()
-    let category: String
-    let hours: Double
-}
 
 #Preview {
     AnalyticsTab()

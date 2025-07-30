@@ -2,12 +2,8 @@ import SwiftUI
 
 struct CurrentActivityWidgetView: View {
     
-    @State private var vm = CurrentActivityWidgetViewModel()
-    @State private var isShowingTimePopover = false
+    @Bindable var vm: TrackingViewModel
     var namespace: Namespace.ID
-        
-    var currentActivity: TimeActivity?
-    @Binding var isShowNewSessionSheet: Bool
     
     var body: some View {
         VStack(spacing: 16) {
@@ -22,26 +18,26 @@ struct CurrentActivityWidgetView: View {
             }
             
             // Текущее занятие
-            if let activity = currentActivity {
-                NavigationLink(value: TrackingTabListRoute.editActivity(activity)) {
+            if let currentActivity = vm.currentActivity {
+                NavigationLink(value: TrackingTabListRoute.editActivity(currentActivity)) {
                     ActivityCardView(
-                        activity: activity,
-                        progress: vm.progress(for: activity),
+                        activity: currentActivity,
+                        progress: vm.progress(for: currentActivity),
                         progressColor: .blue,
-                        leftLabel: vm.elapsedTimeString(for: activity),
-                        rightLabel: vm.remainingTimeString(for: activity),
+                        leftLabel: vm.elapsedTimeString(for: currentActivity),
+                        rightLabel: vm.remainingTimeString(for: currentActivity),
                         onTimeAdjustment: { timeInterval in
-                            vm.updateEndTime(for: activity, by: timeInterval)
+                            vm.extendCurrentActivity(by: timeInterval)
                         }
                     )
                 }
                 .buttonStyle(.plain)
-                .matchedGeometryEffect(id: activity.id, in: namespace)
+                .matchedGeometryEffect(id: currentActivity.id, in: namespace)
                 
                 // Кнопка действия
                 HStack(spacing: 8) {
                     Button {
-                        isShowNewSessionSheet = true
+                        vm.isShowNewSessionSheet = true
                     } label: {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
@@ -52,25 +48,23 @@ struct CurrentActivityWidgetView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     
-                    if let currentActivity {
-                        Button {
-                            vm.finishSessionNow(eventId: currentActivity.id)
-                        } label: {
-                            HStack {
-                                Image(systemName: "stop.fill")
-                                Text("Завершить")
-                            }
-                            .fontWeight(.medium)
-                            .padding()
+                    Button {
+                        vm.finishCurrentActivityNow()
+                    } label: {
+                        HStack {
+                            Image(systemName: "stop.fill")
+                            Text("Завершить")
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.red)
+                        .fontWeight(.medium)
+                        .padding()
                     }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
                 }
                 
             } else {
                 Button {
-                    isShowNewSessionSheet = true
+                    vm.isShowNewSessionSheet = true
                 } label: {
                     VStack(spacing: 8) {
                         Image(systemName: "play.circle.fill")
@@ -97,17 +91,8 @@ struct CurrentActivityWidgetView: View {
     @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
-            namespace: _namespace.wrappedValue,
-            currentActivity: TimeActivity(
-                id: UUID().uuidString,
-                title: "Занятие",
-                calendarId: UUID().uuidString,
-                calendarName: "⏱️ Работа",
-                startTime: Date.now.addingTimeInterval(-3600),
-                endTime: Date.now,
-                category: nil
-            ),
-            isShowNewSessionSheet: .constant(true)
+            vm: TrackingViewModel(),
+            namespace: _namespace.wrappedValue
         )
         Spacer()
     }
@@ -119,9 +104,8 @@ struct CurrentActivityWidgetView: View {
     @Previewable @Namespace var namespace
     VStack {
         CurrentActivityWidgetView(
-            namespace: _namespace.wrappedValue,
-            currentActivity: nil,
-            isShowNewSessionSheet: .constant(true)
+            vm: TrackingViewModel(),
+            namespace: _namespace.wrappedValue
         )
         Spacer()
     }

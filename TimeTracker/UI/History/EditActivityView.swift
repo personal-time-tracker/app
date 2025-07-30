@@ -1,54 +1,121 @@
 import SwiftUI
+import Factory
 
 struct EditActivityView: View {
     
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     @State private var vm: EditActivityViewModel
+    @FocusState private var isTitleFieldFocused: Bool
     
-    init(activity: TimeActivity) {
-        _vm = State(initialValue: EditActivityViewModel(activity: activity, mode: .update))
+    init(activity: Activity) {
+        vm = EditActivityViewModel(
+            currentActivity: activity,
+            oldActivity: activity,
+            mode: .update
+        )
+    }
+    
+    init() {
+        vm = EditActivityViewModel(
+            currentActivity: Activity(
+                title: "",
+                calendarId: "",
+                calendarName: "",
+                startTime: Date.now,
+                endTime: Date.now.addingTimeInterval(3600),
+            ),
+            mode: .create
+        )
     }
     
     var body: some View {
-        if let activity = vm.currentActivity {
-            Form {
-                Section("Название") {
-                    TextField("Название", text:Binding(
-                        get: { activity.title },
-                        set: { vm.currentActivity?.title = $0 }
-                    ))
+        Form {
+            Section("Название") {
+                TextField("Название", text: $vm.currentActivity.title)
+                    .focused($isTitleFieldFocused)
+
+                if isTitleFieldFocused {
+                    ForEach(vm.suggestionActivities) { activity in
+                        Button{
+                            vm.selectSuggestion(activity)
+                        } label: {
+                            HStack {
+                                Text(activity.title)
+                                Spacer()
+                                Text(activity.calendarName)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                    }
+                    
+                    if vm.isShowExpandedButton {
+                        Button(vm.isSuggestionsExpanded ? "Свернуть" : "Показать еще \(vm.totalSuggestionsCount)") {
+                            withAnimation {
+                                vm.isSuggestionsExpanded.toggle()
+                            }
+                        }
+                    }
                 }
+            }
+            
+            Section("Календарь") {
+                Picker("Календарь", selection: $vm.calendarID) {
+                    Text("Не выбран")
+                        .tag(String?(nil))
+                    ForEach(vm.calendars) { calendar in
+                        Text(calendar.title.replacingOccurrences(of: "⏱️ ", with: "")).tag(calendar.id)
+                    }
+                }
+            }
+            
+            Section(vm.mode == .create ? "Начало" : "Время") {
+                DatePicker("Начало",
+                    selection: $vm.currentActivity.startTime,
+                    displayedComponents: [.hourAndMinute, .date]
+                )
                 
-                Section("Календарь") {
-                    Picker("Календарь", selection: Binding(
-                        get: { activity.calendarId },
-                        set: { vm.currentActivity?.calendarId = $0 }
-                    )) {
-                        ForEach(vm.calendars) { calendar in
-                            Text(calendar.title.replacingOccurrences(of: "⏱️ ", with: "")).tag(calendar.id)
+                // Предложение поставить начало как конец предыдущего события
+                if let lastFinishedActivity = vm.lastFinishedActivity {
+                    if vm.isShowSuggestionAutoStartTime {
+                        Button("Сразу после предыдущей:  \(formatTime(lastFinishedActivity.endTime))") {
+                            vm.setStartTimeFromPrevious()
                         }
                     }
                 }
                 
-                Section("Время") {
-                    DatePicker("Начало", selection: Binding(
-                        get: { activity.startTime },
-                        set: { vm.currentActivity?.startTime = $0 }
-                    ), displayedComponents: [.hourAndMinute, .date])
-                    DatePicker("Окончание", selection: Binding(
-                        get: { activity.endTime },
-                        set: { vm.currentActivity?.endTime = $0 }
-                    ), displayedComponents: [.hourAndMinute, .date])
+                if vm.mode == .update {
+                    DatePicker("Конец",
+                               selection: $vm.currentActivity.endTime,
+                               displayedComponents: [.hourAndMinute, .date]
+                    )
                 }
-                
-                Section {
-                    Button("Сохранить") {
-                        vm.save()
-                        dismiss()
-                    }
+            }
+            
+            if vm.mode == .create {
+                Section(
+                    header: Text("Планируемая продолжительность"),
+                    footer: Text("Планируемое окончание: \(formatTime(vm.currentActivity.endTime))")
+                ) {
+                    DurationPickerView(
+                        hours: $vm.durationHours,
+                        minutes: $vm.durationMinutes,
+                    )
+                    .frame(height: 150) // Ограничиваем высоту, чтобы выглядело аккуратно
                 }
-                
+            }
+            
+            Section {
+                Button("Сохранить") {
+                    vm.save()
+                    dismiss()
+                }
+                .disabled(vm.isDisabledSaveButton)
+            }
+            
+            if vm.mode == .update {
                 Section {
                     Button("Удалить", role: .destructive) {
                         vm.delete()
@@ -56,11 +123,31 @@ struct EditActivityView: View {
                     }
                 }
             }
-            .navigationTitle("Изменить активность")
-            .navigationBarTitleDisplayMode(.inline)
-        } else {
-            ProgressView()
-                .navigationTitle("Загрузка...")
         }
+        .task {
+            if vm.mode == .create {
+                isTitleFieldFocused = true
+            }
+        }
+        .animation(.default, value: isTitleFieldFocused)
+        .animation(.default, value: vm.isShowSuggestionAutoStartTime)
+        .navigationTitle("Изменить активность")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert(item: $vm.alert) { $0.asAlert }
     }
+}
+
+#Preview("Редактирование") {
+    EditActivityView(
+        activity: Activity(
+            title: "Title",
+            calendarName: "Calendar",
+            startTime: Date.now,
+            endTime: Date.now.addingTimeInterval(60)
+        )
+    )
+}
+
+#Preview("Создание") {
+    EditActivityView()
 }

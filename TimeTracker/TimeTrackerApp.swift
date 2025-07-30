@@ -10,18 +10,23 @@ import AppIntents
 import BackgroundTasks
 import Factory
 import OSLog
-
-private let logger = Logger(subsystem: "TiteTracker", category: "Main")
+import EventKit
 
 @main
-struct TImeTracerApp: App {
+struct TimeTrackerApp: App {
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "TimeTracer")
+    
     @Environment(\.scenePhase) private var scenePhase
+    
+    @State var alert: AlertModel?
 
+        
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .onChange(of: scenePhase) { phase in
+        .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 scheduleAppRefresh()
             }
@@ -29,12 +34,65 @@ struct TImeTracerApp: App {
     }
 
     init() {
+        
+        // Регистрируем фоновую задачу
         registerBackgroundTask()
+        
+        // Проверяем доступ к календарю
+        do {
+            try checkCalendarAccess()
+        } catch {
+//            alertManager.error(error)
+        }
     }
 
     private func registerBackgroundTask() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.bonavi.timetracer.refresh", using: nil) { task in
             self.handleAppRefresh(task: task as! BGAppRefreshTask)
+        }
+    }
+    
+    private func checkCalendarAccess() throws {
+                
+        // Смотрим статус доступа к календарю
+        let status = EKEventStore.authorizationStatus(for: .event)
+        switch status {
+            
+        // Не определен
+        case .notDetermined:
+            try requestAccess(eventStore: EKEventStore())
+            
+        // Есть доступ, все ок
+        case .fullAccess:
+            break
+            
+        // Нет доступа или он не тот
+        default:
+            throw UserError.new(
+                errorText: "Cannot access calendar",
+                humanText: "Необходим доступ к календарям, текущий статус: \(status)",
+                parameters: ["status": status]
+            )
+        }
+    }
+    
+    private func requestAccess(eventStore: EKEventStore) throws {
+        Task {
+            do {
+                let granted = try await eventStore.requestFullAccessToEvents()
+                guard granted else {
+                    throw UserError.new(
+                        errorText: "Cannot access calendar",
+                        humanText: "Необходим доступ к календарям",
+                        parameters: ["granted": granted]
+                    )
+                }
+            } catch {
+                throw InternalError.wrap(
+                    error: error,
+                    humanText: "Не удалось получить доступ к календарю"
+                )
+            }
         }
     }
 
@@ -57,8 +115,15 @@ struct TImeTracerApp: App {
         queue.maxConcurrentOperationCount = 1
 
         let operation = BlockOperation {
-            let calendarService = CalendarService()
-            calendarService.loadCurrentActivity() // Обновляем данные
+            
+            // Инициализируем зависимости
+            let eventStore = EKEventStore()
+            let calendarRepository = CalendarRepository(eventStore: eventStore)
+            let widgetSyncController = WidgetSyncController(calendarRepository: calendarRepository)
+            
+            // Получаем и кладем текущую активность в Defaults
+            widgetSyncController.loadAndSaveCurrentActivityInDefaults()
+            
             print("Background refresh completed")
             task.setTaskCompleted(success: true)
         }
@@ -74,56 +139,25 @@ struct TImeTracerApp: App {
 
 extension Container {
     var calendarService: Factory<CalendarService> {
-        Factory(self) { return CalendarService() }.singleton
+        
+        // Получаем стор календаря
+        let eventStore = EKEventStore()
+        
+        // Инициализируем репозиторий
+        let calendarRepository = CalendarRepository(eventStore: eventStore)
+        
+        // Инициализируем контроллер обновления виджета
+        let widgetSyncController = WidgetSyncController(calendarRepository: calendarRepository)
+        
+        // Инициализируем сервис
+        let calendarService = CalendarService(
+            calendarRepository: calendarRepository,
+            widgetSyncController: widgetSyncController
+        )
+        
+        // Подгружаем данные в стейт
+        calendarService.loadData()
+        
+        return Factory(self) { return calendarService }.singleton
     }
-    
-    var alertManager: Factory<AlertManager> {
-        return Factory(self) { return AlertManager() }.singleton
-    }
-}
-
-@Observable
-class AlertManager {
-    
-    init() {
-        self.handle = { _ in }
-    }
-    
-    let handle: (AlertModel) -> Void
-    
-    func error(
-        _ error: Error,
-        title: String = "Произошла ошибка",
-        buttonText: String = "OK",
-        callback: @escaping () -> Void = {},
-        file: String = #file,
-        line: Int = #line
-    ) {
-        logger.error("\(file):\(line)\n\(error)")
-        handle(AlertModel(title: title, message: error.localizedDescription, buttonText: buttonText, callback: callback))
-    }
-    
-    func warn(
-        title: String,
-        message: String,
-        buttonText: String = "OK",
-        callback: @escaping () -> Void = {},
-        file: String = #file,
-        line: Int = #line
-    ) {
-        logger.error("\(file):\(line)\n\(title)\n\(message)")
-        handle(AlertModel(title: title, message: message, buttonText: buttonText, callback: callback))
-    }
-    
-    init(handle: @escaping (AlertModel) -> Void) {
-        self.handle = handle
-    }
-}
-
-struct AlertModel: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
-    let buttonText: String
-    let callback: () -> Void
 }

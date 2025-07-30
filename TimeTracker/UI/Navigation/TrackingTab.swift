@@ -9,7 +9,7 @@ import SwiftUI
 
 enum TrackingTabListRoute: Hashable {
     case settings
-    case editActivity(TimeActivity)
+    case editActivity(Activity)
 }
 
 struct TrackingTab: View {

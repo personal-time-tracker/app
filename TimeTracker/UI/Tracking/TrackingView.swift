@@ -13,25 +13,21 @@ struct TrackingView: View {
     @State private var vm = TrackingViewModel()
     @Namespace private var animation
     
-    @ObservationIgnored
-    @Injected(\.alertManager) var alertManager
-
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
                 // Виджет текущего занятия
                 CurrentActivityWidgetView(
-                    namespace: animation,
-                    currentActivity: vm.currentActivity,
-                    isShowNewSessionSheet: $vm.isShowNewSessionSheet
+                    vm: vm,
+                    namespace: animation
                 )
                 .padding(.horizontal)
                 
                 if vm.currentActivity == nil {
                     // Виджет последнего занятия
                     PreviousActivityWidgetView(
-                        previousActivity: vm.previousActivity,
-                        namespace: animation
+                        namespace: animation,
+                        vm: vm
                     )
                     .padding(.horizontal)
                 }
@@ -48,8 +44,9 @@ struct TrackingView: View {
                 }
             }
             .sheet(isPresented: $vm.isShowNewSessionSheet) {
-                CreateActivityView()
+                EditActivityView()
             }
+            .alert(item: $vm.alert) { $0.asAlert }
         }
         .background(Color(.systemGroupedBackground))
     }

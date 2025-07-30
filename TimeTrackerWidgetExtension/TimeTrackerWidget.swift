@@ -66,36 +66,24 @@ struct TimeTracerWidgetView: View {
             Color(.systemBackground)
         }
     }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) % 3600 / 60
-        
-        if hours > 0 {
-            return "\(hours)ч \(minutes)м"
-        } else {
-            return "\(minutes)м"
-        }
-    }
 }
 
 struct TimeTracerTimelineEntry: TimelineEntry {
     let date: Date
-    let currentActivity: TimeActivity?
+    let currentActivity: Activity?
 }
 
 struct TimeTracerTimelineProvider: TimelineProvider {
     func placeholder(in context: Context) -> TimeTracerTimelineEntry {
         TimeTracerTimelineEntry(
             date: Date(),
-            currentActivity: TimeActivity(
+            currentActivity: Activity(
                 id: UUID().uuidString,
                 title: "Работа",
                 calendarId: UUID().uuidString,
                 calendarName: "test",
                 startTime: Date.now.addingTimeInterval(-3600),
-                endTime: Date.now,
-                category: "Работа"
+                endTime: Date.now
             )
         )
     }
@@ -128,14 +116,13 @@ struct TimeTracerTimelineProvider: TimelineProvider {
     TimeTracerTimelineEntry(date: Date(), currentActivity: nil)
     TimeTracerTimelineEntry(
         date: Date(),
-        currentActivity: TimeActivity(
+        currentActivity: Activity(
             id: UUID().uuidString,
             title: "Работа",
             calendarId: UUID().uuidString,
             calendarName: "test",
             startTime: Date.now.addingTimeInterval(-3600),
-            endTime: Date.now,
-            category: "Работа"
+            endTime: Date.now
         )
     )
 } 

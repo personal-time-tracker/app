@@ -7,9 +7,11 @@
 
 import SwiftUI
 import Factory
+import OSLog
 
 struct ContentView: View {
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "ContentView")
     @State private var selectedTab = 0
     @State private var showingSettings = false
     
@@ -30,8 +32,8 @@ struct ContentView: View {
         // Добавляем обработчик изменений фазы сцены
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
-                print("Приложение стало активным, обновляю данные...")
-                calendarService.loadCurrentActivity()
+                logger.debug("Приложение стало активным, обновляю данные...")
+                calendarService.loadData()
             }
         }
     }

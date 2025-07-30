@@ -75,10 +75,15 @@
 		B59C428A2E37592A0075F759 /* Exceptions for "TimeTracker" folder in "TimeTrackerWidgetExtentionDevExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Model/Activity.swift,
 				Model/CalendarInfo.swift,
-				Model/TimeActivity.swift,
+				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Service/WidgetSyncController.swift,
+				Utils/Alert.swift,
+				Utils/Error.swift,
+				Utils/Formatters.swift,
 			);
 			target = B59C426B2E3759090075F759 /* TimeTrackerWidgetExtentionDevExtension */;
 		};
@@ -113,10 +118,15 @@
 		B5E724182E35D86100022C8D /* Exceptions for "TimeTracker" folder in "TimeTrackerWidgetExtensionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Model/Activity.swift,
 				Model/CalendarInfo.swift,
-				Model/TimeActivity.swift,
+				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Service/WidgetSyncController.swift,
+				Utils/Alert.swift,
+				Utils/Error.swift,
+				Utils/Formatters.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTrackerWidgetExtensionExtension */;
 		};
