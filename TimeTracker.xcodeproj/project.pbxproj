@@ -796,7 +796,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker..TimeTrackerWidgetExtentionDev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker.TimeTrackerWidgetExtention;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -826,7 +826,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker..TimeTrackerWidgetExtentionDev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker.TimeTrackerWidgetExtention;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
