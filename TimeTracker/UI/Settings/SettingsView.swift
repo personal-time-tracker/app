@@ -1,4 +1,8 @@
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 struct SettingsView: View {
 

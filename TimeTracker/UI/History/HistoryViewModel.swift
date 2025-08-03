@@ -1,5 +1,9 @@
 import Foundation
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 @Observable
 class HistoryViewModel {

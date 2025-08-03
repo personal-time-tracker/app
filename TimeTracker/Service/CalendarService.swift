@@ -2,6 +2,9 @@ import Foundation
 import EventKit
 import Combine
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
 @Observable
 class CalendarService {
