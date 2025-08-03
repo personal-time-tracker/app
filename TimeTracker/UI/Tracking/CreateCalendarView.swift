@@ -21,8 +21,10 @@ struct CreateCalendarView: View {
                 
                 Section {
                     Button(action: {
-                        vm.createCalendar()
-                        dismiss()
+                        Task {
+                            await vm.createCalendar()
+                            dismiss()
+                        }
                     }) {
                         Text("Создать")
                     }

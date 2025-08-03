@@ -116,8 +116,14 @@ struct EditActivityView: View {
             
             Section {
                 Button("Сохранить") {
-                    vm.save()
-                    dismiss()
+                    Task {
+                        do {
+                            try await vm.save()
+                        } catch {
+                            return
+                        }
+                        dismiss()
+                    }
                 }
                 .disabled(vm.isDisabledSaveButton)
             }
@@ -125,8 +131,14 @@ struct EditActivityView: View {
             if vm.mode == .update {
                 Section {
                     Button("Удалить", role: .destructive) {
-                        vm.delete()
-                        dismiss()
+                        Task {
+                            do {
+                                try await vm.delete()
+                            } catch {
+                                return
+                            }
+                            dismiss()
+                        }
                     }
                 }
             }

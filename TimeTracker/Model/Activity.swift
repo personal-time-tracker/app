@@ -16,6 +16,10 @@ struct Activity: Identifiable, Codable, Hashable {
         startTime <= Date.now && Date.now < endTime
     }
     
+    var isPrevious: Bool {
+        Date.now < startTime
+    }
+    
     // Сравнивает две структуры и отдает дифф для обновления этой структуры
     func compareAndReturnUpdateDiff(with other: Activity) throws -> UpdateActivity {
         
@@ -69,6 +73,21 @@ struct Activity: Identifiable, Codable, Hashable {
             endTime: self.endTime
         )
     }
+    
+    mutating func patch(req: UpdateActivity) {
+        if let title = req.title {
+            self.title = title
+        }
+        if let calendarId = req.calendarId {
+            self.calendarId = calendarId
+        }
+        if let startTime = req.startTime {
+            self.startTime = startTime
+        }
+        if let endTime = req.endTime {
+             self.endTime = endTime
+         }
+    }
 }
 
 struct CreateActivity {
@@ -76,6 +95,16 @@ struct CreateActivity {
     var calendarId: String
     var startTime: Date
     var endTime: Date
+    
+    func convertToActivity() -> Activity {
+        Activity(
+            id: UUID().uuidString,
+            title: self.title,
+            calendarId: self.calendarId,
+            startTime: self.startTime,
+            endTime: self.endTime
+        )
+    }
 }
 
 struct UpdateActivity {

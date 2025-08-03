@@ -27,7 +27,9 @@ struct CurrentActivityWidgetView: View {
                         leftLabel: vm.elapsedTimeString(for: currentActivity),
                         rightLabel: vm.remainingTimeString(for: currentActivity),
                         onTimeAdjustment: { timeInterval in
-                            vm.extendCurrentActivity(by: timeInterval)
+                            Task {
+                                await vm.extendCurrentActivity(by: timeInterval)
+                            }
                         }
                     )
                 }
@@ -49,7 +51,9 @@ struct CurrentActivityWidgetView: View {
                     .buttonStyle(.borderedProminent)
                     
                     Button {
-                        vm.finishCurrentActivityNow()
+                        Task {
+                            await vm.finishCurrentActivityNow()
+                        }
                     } label: {
                         HStack {
                             Image(systemName: "stop.fill")

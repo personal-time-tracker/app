@@ -27,9 +27,6 @@ struct TimeTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .task {
-                    calendarService.loadData()
-                }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -42,62 +39,11 @@ struct TimeTrackerApp: App {
         
         // Регистрируем фоновую задачу
         registerBackgroundTask()
-        
-        // Проверяем доступ к календарю
-        do {
-            try checkCalendarAccess()
-        } catch {
-//            alertManager.error(error)
-        }
     }
 
     private func registerBackgroundTask() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.bonavi.timetracer.refresh", using: nil) { task in
             self.handleAppRefresh(task: task as! BGAppRefreshTask)
-        }
-    }
-    
-    private func checkCalendarAccess() throws {
-                
-        // Смотрим статус доступа к календарю
-        let status = EKEventStore.authorizationStatus(for: .event)
-        switch status {
-            
-        // Не определен
-        case .notDetermined:
-            try requestAccess(eventStore: EKEventStore())
-            
-        // Есть доступ, все ок
-        case .fullAccess:
-            break
-            
-        // Нет доступа или он не тот
-        default:
-            throw UserError.new(
-                errorText: "Cannot access calendar",
-                humanText: "Необходим доступ к календарям, текущий статус: \(status)",
-                parameters: ["status": status]
-            )
-        }
-    }
-    
-    private func requestAccess(eventStore: EKEventStore) throws {
-        Task {
-            do {
-                let granted = try await eventStore.requestFullAccessToEvents()
-                guard granted else {
-                    throw UserError.new(
-                        errorText: "Cannot access calendar",
-                        humanText: "Необходим доступ к календарям",
-                        parameters: ["granted": granted]
-                    )
-                }
-            } catch {
-                throw InternalError.wrap(
-                    error: error,
-                    humanText: "Не удалось получить доступ к календарю"
-                )
-            }
         }
     }
 
@@ -127,7 +73,13 @@ struct TimeTrackerApp: App {
             let widgetSyncController = WidgetSyncController(calendarRepository: calendarRepository)
             
             // Получаем и кладем текущую активность в Defaults
-            widgetSyncController.loadAndSaveCurrentActivityInDefaults()
+            Task {
+                do {
+                    try await widgetSyncController.loadAndSaveCurrentActivityInDefaults()
+                } catch {
+                    
+                }
+            }
             
             print("Background refresh completed")
             task.setTaskCompleted(success: true)
@@ -163,3 +115,5 @@ extension Container {
         return Factory(self) { return calendarService }.singleton
     }
 }
+
+

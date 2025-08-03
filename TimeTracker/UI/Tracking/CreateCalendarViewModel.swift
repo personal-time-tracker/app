@@ -19,7 +19,7 @@ class CreateCalendarViewModel {
         self.currentCalendar = currentCalendar
     }
     
-    func createCalendar() {
+    func createCalendar() async {
         
         do {
             
@@ -33,7 +33,7 @@ class CreateCalendarViewModel {
             req.title = "\(calendarPrefix) \(req.title)"
             
             // Создаем календарь
-            try calendarService.createCalendar(req: req)
+            try await calendarService.createCalendar(req: req)
             
         } catch {
         

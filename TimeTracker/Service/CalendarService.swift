@@ -47,30 +47,30 @@ class CalendarService {
     // MARK: Functions
     
     // Создает календарь
-    func createCalendar(req: CreateCalendar) throws {
-        try calendarRepository.createCalendar(req: req)
+    func createCalendar(req: CreateCalendar) async throws {
+        try await calendarRepository.createCalendar(req: req)
     }
     
     // Обновляет календари
-    func loadData() {
-        calendarRepository.loadCalendars()
-        calendarRepository.loadEvents()
+    func loadData() async throws {
+        try await calendarRepository.loadCalendars()
+        try await calendarRepository.loadEvents()
         widgetSyncController.saveCurrentActivityInDefaults(currentActivity)
     }
     
     // Создает активность
-    func createActivity(req: CreateActivity) throws {
-        try calendarRepository.createEvent(req: req)
+    func createActivity(req: CreateActivity) async throws {
+        try await calendarRepository.createEvent(req: req)
     }
     
     // Обновляет активность
-    func updateActivity(req: UpdateActivity) throws {
-        try calendarRepository.updateEvent(req: req)
+    func updateActivity(req: UpdateActivity) async throws {
+        try await calendarRepository.updateEvent(req: req)
     }
     
     // Удаляет активность
-    func deleteActivity(id: String) throws {
-        try calendarRepository.deleteEvent(id: id)
+    func deleteActivity(id: String) async throws {
+        try await calendarRepository.deleteEvent(id: id)
     }
     
     // Возвращает активность, которая была разделена на две из-за пересечения 00:00

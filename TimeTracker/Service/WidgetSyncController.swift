@@ -27,8 +27,8 @@ final class WidgetSyncController {
     }
     
     // Сохраняет текущую активность в UserDefaults
-    func loadAndSaveCurrentActivityInDefaults() {
-        let currentActivity = calendarRepository.getCurrentEvent()
+    func loadAndSaveCurrentActivityInDefaults() async throws {
+        let currentActivity = try await calendarRepository.getCurrentEvent()
         saveCurrentActivityInDefaults(currentActivity)
     }
 }

@@ -59,7 +59,7 @@ class TrackingViewModel {
         return formatDuration(max(0, remaining))
     }
     
-    func extendCurrentActivity(by timeInterval: TimeInterval) {
+    func extendCurrentActivity(by timeInterval: TimeInterval) async {
         do {
             guard let activity = currentActivity else {
                 throw UserError.new(
@@ -68,13 +68,13 @@ class TrackingViewModel {
                 )
             }
             let newEndTime = activity.endTime.addingTimeInterval(timeInterval)
-            try calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: newEndTime))
+            try await calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: newEndTime))
         } catch {
             alert = AlertModel(error: error)
         }
     }
     
-    func finishCurrentActivityNow() {
+    func finishCurrentActivityNow() async {
         do {
             guard let activity = currentActivity else {
                 throw UserError.new(
@@ -82,7 +82,7 @@ class TrackingViewModel {
                     humanText: "Невозможно завершить активность"
                 )
             }
-            try calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: Date()))
+            try await calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: Date()))
         } catch {
             alert = AlertModel(error: error)
         }
@@ -95,7 +95,7 @@ class TrackingViewModel {
         return "Прошло: \(formatDuration(max(0, sinceEnd)))"
     }
         
-    func continueAndExtendPreviousActivity(by duration: TimeInterval) {
+    func continueAndExtendPreviousActivity(by duration: TimeInterval) async {
         do {
             guard let activity = previousActivity else {
                 throw UserError.new(
@@ -104,7 +104,7 @@ class TrackingViewModel {
                 )
             }
             let newEndTime = currentDate.addingTimeInterval(duration)
-            try calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: newEndTime))
+            try await calendarService.updateActivity(req: UpdateActivity(id: activity.id, endTime: newEndTime))
         } catch {
             alert = AlertModel(error: error)
         }

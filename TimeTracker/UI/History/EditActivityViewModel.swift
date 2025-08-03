@@ -139,24 +139,26 @@ class EditActivityViewModel {
         currentActivity.startTime = lastFinishedActivity.endTime
     }
     
-    func save() {
+    func save() async throws {
         do {
             switch mode{
             case .create:
-                try calendarService.createActivity(req: currentActivity.convertToCreateActivity())
+                try await calendarService.createActivity(req: currentActivity.convertToCreateActivity())
             case .update:
-                try calendarService.updateActivity(req: try currentActivity.compareAndReturnUpdateDiff(with: oldActivity))
+                try await calendarService.updateActivity(req: try currentActivity.compareAndReturnUpdateDiff(with: oldActivity))
             }
         } catch {
             alert = AlertModel(error: error)
+            throw error
         }
     }
     
-    func delete() {
+    func delete() async throws {
         do {
-            try calendarService.deleteActivity(id: currentActivity.id)
+            try await calendarService.deleteActivity(id: currentActivity.id)
         } catch {
             alert = AlertModel(error: error)
+            throw error
         }
     }
 } 

@@ -41,7 +41,9 @@ struct PreviousActivityWidgetView: View {
                                 
                                 ForEach(vm.continueEndExtendActivitySuggestions, id: \.self) { suggestionAdjustment in
                                     Button(formatTimeAdjustment(suggestionAdjustment)) {
-                                        vm.continueAndExtendPreviousActivity(by: suggestionAdjustment)
+                                        Task {
+                                            await vm.continueAndExtendPreviousActivity(by: suggestionAdjustment)
+                                        }
                                     }
                                     .buttonStyle(ExtensionButtonStyle())
                                 }
@@ -49,7 +51,9 @@ struct PreviousActivityWidgetView: View {
                             .fixedSize(horizontal: false, vertical: true)
                             
                             Button(action: {
-                                vm.continueAndExtendPreviousActivity(by: 0)
+                                Task {
+                                    await vm.continueAndExtendPreviousActivity(by: 0)
+                                }
                             }) {
                                 Label("Завершил только сейчас", systemImage: "mappin.and.ellipse")
                                     .fontWeight(.semibold)

@@ -22,6 +22,8 @@ struct ContentView: View {
     
     // Добавляем отслеживание фазы сцены
     @Environment(\.scenePhase) private var scenePhase
+    
+    @State private var alert: AlertModel?
 
     var body: some View {
         AppTabView()
@@ -33,9 +35,16 @@ struct ContentView: View {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
                 logger.debug("Приложение стало активным, обновляю данные...")
-                calendarService.loadData()
+                Task {
+                    do {
+                        try await calendarService.loadData()
+                    } catch {
+                        alert = AlertModel(error: error)
+                    }
+                }
             }
         }
+        .alert(item: $alert) { $0.asAlert }
     }
     
     private func setupNotifications() {

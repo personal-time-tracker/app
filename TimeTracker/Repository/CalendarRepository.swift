@@ -24,7 +24,18 @@ class CalendarRepository {
     // MARK: - State
     
     var calendars: [CalendarInfo] = []
-    var events: [Activity] = []
+    var events: [Activity] = [] {
+        didSet {
+            currentEvent = events.filter({ $0.isActive }).last
+            previousEvent = events.filter({ $0.isPrevious }).last
+        }
+    }
+    
+    // Текущая активность это та, у которой время старта и конца между текущим моментом
+    var currentEvent: Activity?
+    
+    // Предыдущая активность это последняя активность, которая была завершена до текущего момента
+    var previousEvent: Activity?
     
     // MARK: - Init
     
@@ -41,22 +52,65 @@ class CalendarRepository {
         )
     }
     
-    // MARK: - Computed
-    
-    // Текущие активности это та, у которой время старта и конца между текущим моментом
-    var currentEvent: Activity? {
-        events.filter({ $0.endTime < Date.now && $0.startTime > Date.now }).last
-    }
-    
-    // Предыдущая активность это последняя активность, которая была завершена до текущего момента
-    var previousEvent: Activity? {
-        events.filter({ $0.endTime < Date.now }).last
-    }
-    
     // MARK: - Functions
     
+    func checkCalendarAccess(eventStore: EKEventStore) async throws {
+        
+        // Смотрим статус доступа к календарю
+        let status = EKEventStore.authorizationStatus(for: .event)
+        switch status {
+            
+        // Не определен
+        case .notDetermined:
+            try await requestAccess(eventStore: eventStore)
+            
+        // Есть доступ, все ок
+        case .fullAccess:
+            break
+            
+        // Нет доступа или он не тот
+        default:
+            throw UserError.new(
+                errorText: "Cannot access calendar",
+                humanText: "Необходим доступ к календарям, текущий статус: \(status)",
+                parameters: ["status": status]
+            )
+        }
+    }
+    
+    func requestAccess(eventStore: EKEventStore) async throws {
+        do {
+            let granted = try await eventStore.requestFullAccessToEvents()
+            guard granted else {
+                throw UserError.new(
+                    errorText: "Cannot access calendar",
+                    humanText: "Необходим доступ к календарям",
+                    parameters: ["granted": granted]
+                )
+            }
+        } catch {
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось получить доступ к календарю"
+            )
+        }
+    }
+    
     // Создает событие в календаре
-    func createEvent(req: CreateActivity) throws {
+    func createEvent(req: CreateActivity) async throws {
+        
+        try await checkCalendarAccess(eventStore: eventStore)
+        
+        // Вслепую обновляем стейт
+        let event = req.convertToActivity()
+        switch (true) {
+        case event.isActive:
+            self.currentEvent = event
+        case event.isPrevious:
+            self.previousEvent = event
+        default:
+            break
+        }
         
         // Получаем календарь по идентификатору из события
         guard let calendar = eventStore.calendar(withIdentifier: req.calendarId) else {
@@ -67,26 +121,28 @@ class CalendarRepository {
             )
         }
         
-        let event = EKEvent(eventStore: eventStore)
-        event.title = req.title
-        event.startDate = req.startTime
-        event.endDate = req.endTime
-        event.calendar = calendar
+        let calendarEvent = EKEvent(eventStore: eventStore)
+        calendarEvent.title = req.title
+        calendarEvent.startDate = req.startTime
+        calendarEvent.endDate = req.endTime
+        calendarEvent.calendar = calendar
         
         do {
-            try eventStore.save(event, span: .thisEvent)
+            try eventStore.save(calendarEvent, span: .thisEvent)
         } catch {
             throw InternalError.new(
                 errorText: "Cannot save event",
                 humanText: "Не удалось сохранить событие в календаре",
-                parameters: ["event": event]
+                parameters: ["event": calendarEvent]
             )
         }
     }
     
     // Загружает календари из хранилища в стейт
-    func loadCalendars() {
+    func loadCalendars() async throws {
         logger.info("Подгружаем календари из хранилища")
+        
+        try await checkCalendarAccess(eventStore: eventStore)
         
         // Получаем календари
         let calendars = eventStore.calendars(for: .event)
@@ -109,9 +165,11 @@ class CalendarRepository {
         }
     }
     
-    // Возвращает текущее активное событие
-    func getCurrentEvent() -> Activity? {
+    // Возвращает текущее активное событие, но не обновляет его в стейте
+    func getCurrentEvent() async throws -> Activity? {
         logger.info("Загружаем текущее событие из хранилища")
+        
+        try await checkCalendarAccess(eventStore: eventStore)
         
         let now = Date.now
         
@@ -152,8 +210,10 @@ class CalendarRepository {
     }
     
     // Загружает события из хранилища в стейт
-    func loadEvents() {
+    func loadEvents() async throws {
         logger.info("Подгружаем события из хранилища")
+        
+        try await checkCalendarAccess(eventStore: eventStore)
                 
         // Получаем календари
         let timeTrackingCalendars = eventStore.calendars(for: .event).filter { calendar in
@@ -187,7 +247,19 @@ class CalendarRepository {
     }
     
     // Обновляет событие в календаре
-    func updateEvent(req: UpdateActivity) throws {
+    func updateEvent(req: UpdateActivity) async throws {
+        
+        try await checkCalendarAccess(eventStore: eventStore)
+        
+        // Вслепую обновляем стейт
+        switch req.id {
+        case currentEvent?.id:
+            currentEvent?.patch(req: req)
+        case previousEvent?.id:
+            previousEvent?.patch(req: req)
+        default:
+            break
+        }
     
         // Получаем актуальное событие из календаря
         guard let calendarEvent = eventStore.event(withIdentifier: req.id) else {
@@ -239,7 +311,9 @@ class CalendarRepository {
     }
     
     // Удаляет событие
-    func deleteEvent(id: String) throws {
+    func deleteEvent(id: String) async throws {
+        
+        try await checkCalendarAccess(eventStore: eventStore)
         
         // Ищем событие в календаре
         guard let calendarEvent = eventStore.event(withIdentifier: id) else {
@@ -262,7 +336,9 @@ class CalendarRepository {
     }
     
     // Создает календарь
-    func createCalendar(req: CreateCalendar) throws {
+    func createCalendar(req: CreateCalendar) async throws {
+        
+        try await checkCalendarAccess(eventStore: eventStore)
         
         // Создаем календарь
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
@@ -301,10 +377,16 @@ class CalendarRepository {
         logger.debug("Данные календаря изменились, перезагружаю активности...")
         
         // Обновления UI должны происходить в основном потоке, так как они влияют на @Observable properties
-        DispatchQueue.main.async { [weak self] in
-            self?.loadCalendars()
-            self?.loadEvents()
+//        DispatchQueue.main.async { [weak self] in
+        Task {
+            do {
+                try await loadCalendars()
+                try await loadEvents()
+            } catch {
+                logger.error("Ошибка при обновлении календаря: \(error)")
+            }
         }
+//        }
     }
     
     deinit {
