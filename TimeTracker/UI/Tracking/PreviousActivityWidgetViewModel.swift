@@ -38,14 +38,22 @@ class PreviousActivityWidgetViewModel {
         eventId: String,
         by duration: TimeInterval
     ) {
-        calendarService.extendSession(
-            eventId: eventId,
-            by: duration
-        )
+        do {
+            try calendarService.extendSession(
+                eventId: eventId,
+                by: duration
+            )
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     func finishSessionNow(eventId: String) {
-        calendarService.finishSessionNow(eventId: eventId)
+        do {
+            try calendarService.finishSessionNow(eventId: eventId)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     deinit {

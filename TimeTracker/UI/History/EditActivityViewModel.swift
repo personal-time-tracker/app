@@ -29,20 +29,31 @@ class EditActivityViewModel {
     init(activity: TimeActivity, mode: EditActivityMode) {
         self.mode = mode
         
-        // "Склеиваем" событие: по ID "осколка" загружаем полную версию
-        if let fullActivity = calendarService.getActivity(by: activity.id) {
+        do {
+            // "Склеиваем" событие: по ID "осколка" загружаем полную версию
+            let fullActivity = try calendarService.getActivity(by: activity.id)
             self.currentActivity = fullActivity
             self.oldActivity = fullActivity
+        } catch {
+            alert = AlertModel(error: error)
         }
     }
     
     func save() {
         guard let activity = currentActivity else { return }
-        calendarService.updateActivity(activity)
+        do {
+            try calendarService.updateActivity(activity)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     func delete() {
         guard let activity = oldActivity else { return }
-        calendarService.deleteActivity(activity)
+        do {
+            try calendarService.deleteActivity(activity)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
-} 
+}

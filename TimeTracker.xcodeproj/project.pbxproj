@@ -79,6 +79,7 @@
 				Model/TimeActivity.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Utils/Error.swift,
 			);
 			target = B59C426B2E3759090075F759 /* TimeTrackerWidgetExtentionDevExtension */;
 		};
@@ -119,6 +120,7 @@
 				Model/TimeActivity.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Utils/Error.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTrackerWidgetExtensionExtension */;
 		};

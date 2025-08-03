@@ -30,6 +30,10 @@ class CreateCalendarViewModel {
         guard isTitleValid else { return }
         let title = calendarTitle.trimmingCharacters(in: .whitespaces)
         let fullTitle = "\(calendarPrefix) \(title)"
-        calendarService.createCalendar(fullTitle: fullTitle)
+        do {
+            try calendarService.createCalendar(fullTitle: fullTitle)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
-} 
+}

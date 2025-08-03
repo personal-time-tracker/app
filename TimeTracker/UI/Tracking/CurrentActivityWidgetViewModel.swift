@@ -48,11 +48,19 @@ class CurrentActivityWidgetViewModel {
     }
     
     func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
-        calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+        do {
+            try calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     func finishSessionNow(eventId: String) {
-        calendarService.finishSessionNow(eventId: eventId)
+        do {
+            try calendarService.finishSessionNow(eventId: eventId)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
 
     deinit {

@@ -81,7 +81,10 @@ class CreateActivityViewModel {
         
         let timeInterval = TimeInterval(hours * 3600 + minutes * 60)
         
-        // Task и await здесь не нужны, так как и ViewModel, и Service - MainActor
-        calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
+        do {
+            try calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
-} 
+}
