@@ -77,7 +77,7 @@ class CalendarService {
         }
     }
     
-    func createCalendar(fullTitle: String) {
+    func createCalendar(fullTitle: String) throws {
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         newCalendar.title = fullTitle
         
@@ -93,7 +93,11 @@ class CalendarService {
             // После создания сразу обновляем список календарей
             loadCalendars()
         } catch {
-            print("Ошибка создания календаря: \(error.localizedDescription)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось создать календарь",
+                parameters: ["title": fullTitle]
+            )
         }
     }
     
@@ -199,24 +203,27 @@ class CalendarService {
         }
     }
     
-    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {
+    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) throws {
         // Запоминаем точное время начала новой сессии
         let newSessionStartDate = startDate
         
         // Завершаем текущую сессию, устанавливая ее конец точно в момент начала новой
-        endCurrentActivity(endDate: newSessionStartDate)
+        try endCurrentActivity(endDate: newSessionStartDate)
         
         // Создаем событие в календаре, начиная с того же самого момента
-        createCalendarEvent(title: title, calendarId: calendarId, duration: duration, startDate: newSessionStartDate)
+        try createCalendarEvent(title: title, calendarId: calendarId, duration: duration, startDate: newSessionStartDate)
         
         // Перезагружаем текущую сессию из календаря
         loadCurrentActivity()
     }
     
-    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
+    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) throws {
         guard let event = eventStore.event(withIdentifier: activity.id) else {
-            print("Ошибка: не удалось найти событие с ID \(activity.id) для изменения времени")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event to update end time",
+                humanText: "Не найдено событие для изменения времени окончания",
+                parameters: ["activityId": activity.id]
+            )
         }
         
         event.endDate = event.endDate.addingTimeInterval(timeInterval)
@@ -225,22 +232,29 @@ class CalendarService {
             try eventStore.save(event, span: .thisEvent)
             loadCurrentActivity() // Обновляем UI
         } catch {
-            print("Ошибка изменения времени окончания события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось изменить время окончания события",
+                parameters: ["activityId": activity.id]
+            )
         }
     }
     
-    func endCurrentActivity(endDate: Date) {
+    func endCurrentActivity(endDate: Date) throws {
         guard let activity = currentActivity else { return }
         
-        updateCalendarEvent(eventId: activity.id.components(separatedBy: "_part").first ?? "", newEndDate: endDate)
+        try updateCalendarEvent(eventId: activity.id.components(separatedBy: "_part").first ?? "", newEndDate: endDate)
         
         loadCurrentActivity()
     }
 
-    func extendSession(eventId: String, by timeInterval: TimeInterval) {
+    func extendSession(eventId: String, by timeInterval: TimeInterval) throws {
         guard let event = eventStore.event(withIdentifier: eventId) else {
-            print("Ошибка: не удалось найти событие с ID \(eventId) для продления")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event to extend",
+                humanText: "Не найдено событие для продления",
+                parameters: ["eventId": eventId]
+            )
         }
         
         // Продлеваем от ТЕКУЩЕГО времени, а не от старого времени окончания
@@ -253,14 +267,21 @@ class CalendarService {
             // Также проверим, не стало ли это событие текущим
             loadCurrentActivity()
         } catch {
-            print("Ошибка продления события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось продлить событие",
+                parameters: ["eventId": eventId]
+            )
         }
     }
 
-    func finishSessionNow(eventId: String) {
+    func finishSessionNow(eventId: String) throws {
         guard let event = eventStore.event(withIdentifier: eventId) else {
-            print("Ошибка: не удалось найти событие с ID \(eventId) для завершения")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event to finish",
+                humanText: "Не найдено событие для завершения",
+                parameters: ["eventId": eventId]
+            )
         }
         
         event.endDate = Date()
@@ -270,12 +291,27 @@ class CalendarService {
             loadPreviousActivity()
             loadCurrentActivity()
         } catch {
-            print("Ошибка завершения события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось завершить событие",
+                parameters: ["eventId": eventId]
+            )
         }
     }
     
-    private func createCalendarEvent(title: String, calendarId: String, duration: TimeInterval, startDate: Date) {
-        guard let calendar = eventStore.calendar(withIdentifier: calendarId) else { return }
+    private func createCalendarEvent(
+        title: String,
+        calendarId: String,
+        duration: TimeInterval,
+        startDate: Date
+    ) throws {
+        guard let calendar = eventStore.calendar(withIdentifier: calendarId) else {
+            throw NotFound.new(
+                errorText: "Cannot find calendar for event creation",
+                humanText: "Не найден календарь для создания события",
+                parameters: ["calendarId": calendarId]
+            )
+        }
         
         let event = EKEvent(eventStore: eventStore)
         event.title = title
@@ -286,29 +322,43 @@ class CalendarService {
         do {
             try eventStore.save(event, span: .thisEvent)
         } catch {
-            print("Ошибка создания события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось создать событие",
+                parameters: ["title": title, "calendarId": calendarId]
+            )
         }
     }
     
-    private func updateCalendarEvent(eventId: String, newEndDate: Date) {
+    private func updateCalendarEvent(eventId: String, newEndDate: Date) throws {
         // Получаем событие напрямую по его идентификатору
         guard let event = eventStore.event(withIdentifier: eventId) else {
-            print("Ошибка: не удалось найти событие с ID \(eventId)")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event for updating",
+                humanText: "Не найдено событие для обновления",
+                parameters: ["eventId": eventId]
+            )
         }
         
         event.endDate = newEndDate
         do {
             try eventStore.save(event, span: .thisEvent)
         } catch {
-            print("Ошибка обновления события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось обновить событие",
+                parameters: ["eventId": eventId]
+            )
         }
     }
     
-    func updateActivity(_ activity: TimeActivity) {
+    func updateActivity(_ activity: TimeActivity) throws {
         guard let event = eventStore.event(withIdentifier: activity.id) else {
-            print("Ошибка: не удалось найти событие с ID \(activity.id) для обновления")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event for updating",
+                humanText: "Не найдено событие для обновления",
+                parameters: ["activity": activity]
+            )
         }
         
         event.title = activity.title
@@ -323,21 +373,31 @@ class CalendarService {
             try eventStore.save(event, span: .thisEvent)
             loadCurrentActivity()
         } catch {
-            print("Ошибка обновления события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось обновить событие",
+                parameters: ["event": event]
+            )
         }
     }
     
-    func deleteActivity(_ activity: TimeActivity) {
+    func deleteActivity(_ activity: TimeActivity) throws {
         guard let event = eventStore.event(withIdentifier: activity.id) else {
-            print("Ошибка: не удалось найти событие с ID \(activity.id) для удаления")
-            return
+            throw NotFound.new(
+                errorText: "Cannot find event for deletion",
+                humanText: "Не найдено событие для удаления",
+                parameters: ["eventId": activity.id]
+            )
         }
         
         do {
             try eventStore.remove(event, span: .thisEvent)
             loadCurrentActivity()
         } catch {
-            print("Ошибка удаления события: \(error)")
+            throw InternalError.wrap(
+                error: error,
+                humanText: "Не удалось удалить событие"
+            )
         }
     }
     
@@ -406,12 +466,16 @@ class CalendarService {
         return resultingActivities
     }
     
-    func getActivity(by id: String) -> TimeActivity? {
+    func getActivity(by id: String) throws -> TimeActivity {
         // Извлекаем оригинальный ID, отбрасывая суффикс "_part"
         let originalEventId = id.components(separatedBy: "_part").first ?? id
         
         guard let event = eventStore.event(withIdentifier: originalEventId) else {
-            return nil
+            throw NotFound.new(
+                errorText: "Cannot find event by id",
+                humanText: "Не найдено событие по ID",
+                parameters: ["id": id, "originalEventId": originalEventId]
+            )
         }
         
         // Возвращаем полный, неразрезанный TimeActivity
@@ -453,7 +517,7 @@ class CalendarService {
     // MARK: - Calendar Synchronization
     
     @objc private func calendarDidChange() {
-        print("Данные календаря изменились, перезагружаю активности...")
+        logger.debug("Данные календаря изменились, перезагружаю активности...")
         // Обновления UI должны происходить в основном потоке, так как они влияют на @Observable properties
         DispatchQueue.main.async { [weak self] in
             // loadCurrentActivity() уже вызывает loadPreviousActivity(), так что достаточно одного вызова

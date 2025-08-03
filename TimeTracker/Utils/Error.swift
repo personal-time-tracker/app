@@ -59,7 +59,7 @@ struct ErrorType: Equatable {
     // Обертка существующей ошибки
     func wrap(
         error: Error,
-        humanText: String = "",
+        humanText: String,
         parameters: [String: Any] = [:]
     ) -> AppError {
         
