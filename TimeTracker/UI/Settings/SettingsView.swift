@@ -8,6 +8,8 @@ struct SettingsView: View {
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
     @AppStorage("selectedTheme") private var selectedTheme: Theme = .system
     
+    @State private var alert: AlertModel?
+    
     var body: some View {
         NavigationView {
             Form {
@@ -46,6 +48,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showingPrefixPicker) {
                 PrefixPickerView(selectedPrefix: $calendarPrefix)
             }
+            .alert(item: $alert) { $0.asAlert }
         }
     }
 }

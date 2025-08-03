@@ -132,6 +132,7 @@ struct CreateActivityView: View {
                 vm.refreshCalendarsIfNeeded()
                 isTitleFieldFocused = true
             }
+            .alert(item: $vm.alert) { $0.asAlert }
         }
     }
     

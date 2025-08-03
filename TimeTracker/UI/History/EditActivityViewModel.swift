@@ -12,6 +12,8 @@ class EditActivityViewModel {
     @ObservationIgnored
     @Injected(\.calendarService) private var calendarService
     
+    var alert: AlertModel?
+    
     var currentActivity: TimeActivity?
     private var oldActivity: TimeActivity?
     let mode: EditActivityMode

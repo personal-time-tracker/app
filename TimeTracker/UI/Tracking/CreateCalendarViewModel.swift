@@ -11,6 +11,8 @@ class CreateCalendarViewModel {
     
     let calendarPrefix: String
     
+    var alert: AlertModel?
+    
     init() {
         let service = Container.shared.calendarService()
         self.calendarPrefix = service.calendarPrefix

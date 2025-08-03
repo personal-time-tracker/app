@@ -18,6 +18,8 @@ class CreateActivityViewModel {
     
     var recentActivities: [TimeActivity] = []
     
+    var alert: AlertModel?
+    
     var filteredActivities: [TimeActivity] {
         if activityTitle.isEmpty {
             return recentActivities

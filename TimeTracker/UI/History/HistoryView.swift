@@ -43,6 +43,7 @@ struct HistoryView: View {
             .onAppear {
                 vm.fetchActivities()
             }
+            .alert(item: $vm.alert) { $0.asAlert }
         }
     }
     

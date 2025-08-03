@@ -17,6 +17,8 @@ class PreviousActivityWidgetViewModel {
     private var timer: Timer?
     var currentDate = Date()
     
+    var alert: AlertModel?
+    
     init() {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.currentDate = Date()

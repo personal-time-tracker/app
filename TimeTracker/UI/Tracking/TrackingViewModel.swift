@@ -14,6 +14,8 @@ class TrackingViewModel {
     @ObservationIgnored
     @Injected(\.calendarService) var calendarService
     
+    var alert: AlertModel?
+    
     var currentActivity: TimeActivity? {
         return calendarService.currentActivity
     }
