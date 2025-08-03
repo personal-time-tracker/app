@@ -20,5 +20,95 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "55089954-2875-4D67-9CFF-A0C83D0C16EA"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TimeTracker/Service/CalendarService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "92"
+            endingLineNumber = "92"
+            landmarkName = "startNewSession(title:calendarId:duration:startDate:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "CAC5E331-08FC-43A9-897D-8046BE187640"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TimeTracker/Service/CalendarService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "119"
+            endingLineNumber = "119"
+            landmarkName = "endCurrentActivity(endDate:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "CAC5E331-08FC-43A9-897D-8046BE187640 - c7ed331d0a6ec1e3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for TimeTrackerDev.CalendarService.endCurrentActivity(endDate: Foundation.Date) async throws -&gt; ()"
+                  moduleName = "TimeTrackerDev.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bonavi/Projects/TimeTracker/App/TimeTracker/Service/CalendarService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "119"
+                  endingLineNumber = "119">
+               </Location>
+               <Location
+                  uuid = "CAC5E331-08FC-43A9-897D-8046BE187640 - fd6508272e31027d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for TimeTrackerDev.CalendarService.endCurrentActivity(endDate: Foundation.Date) async throws -&gt; ()"
+                  moduleName = "TimeTrackerDev.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bonavi/Projects/TimeTracker/App/TimeTracker/Service/CalendarService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "119"
+                  endingLineNumber = "119">
+               </Location>
+               <Location
+                  uuid = "CAC5E331-08FC-43A9-897D-8046BE187640 - ad0d0734f9b03ffb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(9) suspend resume partial function for TimeTrackerDev.CalendarService.endCurrentActivity(endDate: Foundation.Date) async throws -&gt; ()"
+                  moduleName = "TimeTrackerDev.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bonavi/Projects/TimeTracker/App/TimeTracker/Service/CalendarService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "119"
+                  endingLineNumber = "119">
+               </Location>
+               <Location
+                  uuid = "CAC5E331-08FC-43A9-897D-8046BE187640 - 591e05173600980d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 @Swift.MainActor @Sendable () -&gt; Swift.Optional&lt;Swift.String&gt; in TimeTrackerDev.CalendarService.endCurrentActivity(endDate: Foundation.Date) async throws -&gt; ()"
+                  moduleName = "TimeTrackerDev.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bonavi/Projects/TimeTracker/App/TimeTracker/Service/CalendarService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "119"
+                  endingLineNumber = "119">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

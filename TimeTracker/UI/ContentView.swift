@@ -31,7 +31,9 @@ struct ContentView: View {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
                 print("Приложение стало активным, обновляю данные...")
-                calendarService.loadCurrentActivity()
+                Task {
+                    try await calendarService.loadCurrentActivity()
+                }
             }
         }
     }

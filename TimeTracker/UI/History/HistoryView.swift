@@ -40,8 +40,8 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("История")
-            .onAppear {
-                vm.fetchActivities()
+            .task {
+                await vm.fetchActivities()
             }
             .alert(item: $vm.alert) { $0.asAlert }
         }

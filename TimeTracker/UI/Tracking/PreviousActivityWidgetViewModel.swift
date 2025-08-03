@@ -11,7 +11,7 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
-
+@MainActor
 @Observable
 class PreviousActivityWidgetViewModel {
     
@@ -23,10 +23,16 @@ class PreviousActivityWidgetViewModel {
     
     var alert: AlertModel?
     
-    init() {
+    func startTimer() {
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.currentDate = Date()
         }
+    }
+    
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func timeSinceEndedString(for activity: TimeActivity) -> String {
@@ -38,25 +44,25 @@ class PreviousActivityWidgetViewModel {
         eventId: String,
         by duration: TimeInterval
     ) {
-        do {
-            try calendarService.extendSession(
-                eventId: eventId,
-                by: duration
-            )
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.extendSession(
+                    eventId: eventId,
+                    by: duration
+                )
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
     
     func finishSessionNow(eventId: String) {
-        do {
-            try calendarService.finishSessionNow(eventId: eventId)
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.finishSessionNow(eventId: eventId)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
-    }
-    
-    deinit {
-        timer?.invalidate()
     }
 }

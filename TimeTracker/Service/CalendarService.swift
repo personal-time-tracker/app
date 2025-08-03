@@ -6,11 +6,13 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
+// Service is now non-isolated. It can do its work on any thread.
 @Observable
 class CalendarService {
     
     private let repository = CalendarRepository()
     
+    // These properties are still observed by the UI, so changes must be published from the MainActor.
     var calendars: [CalendarInfo] = []
     var currentActivity: TimeActivity?
     var previousActivity: TimeActivity?
@@ -19,212 +21,135 @@ class CalendarService {
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
         
     init() {
-        let status = repository.getAuthorizationStatus()
-        
-        switch status {
-        case .notDetermined:
-            requestAccess()
-        case .authorized, .fullAccess, .writeOnly:
-            loadCalendars()
-            loadCurrentActivity()
-        case .denied, .restricted:
-            // TODO: Handle denied access properly, maybe show an alert to the user.
-            break
-        @unknown default:
-            break
+        if repository.getAuthorizationStatus() == .authorized || repository.getAuthorizationStatus() == .fullAccess {
+            Task {
+                do {
+                    try await loadCurrentActivity()
+                } catch {
+                    logger.error("Failed to load initial data: \(error.localizedDescription)")
+                }
+            }
         }
         
         repository.addObserver(self, selector: #selector(calendarDidChange))
     }
     
-    func requestAccess() {
-        Task {
-            do {
-                let granted = try await repository.requestAccess()
-                if granted {
-                    await MainActor.run {
-                        self.loadCalendars()
-                        self.loadCurrentActivity()
-                    }
-                }
-            } catch {
-                // TODO: Handle error properly.
-                logger.error("Error requesting calendar access: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    func createCalendar(title: String) throws {
+    func createCalendar(title: String) async throws {
         let fullTitle = "\(calendarPrefix) \(title)"
-        _ = try repository.createCalendar(title: fullTitle)
-        loadCalendars() // Refresh the list
+        _ = try await repository.createCalendar(title: fullTitle)
+        try await loadCalendars()
     }
     
-    func loadCalendars() {
-        do {
-            let ekCalendars = try repository.getCalendars(with: calendarPrefix)
-            self.calendars = ekCalendars.map { calendar in
-                CalendarInfo(
-                    id: calendar.calendarIdentifier,
-                    title: calendar.title,
-                    color: calendar.cgColor?.components?.map(String.init).joined(separator: ",") ?? ""
-                )
-            }
-        } catch {
-            // TODO: Handle error properly.
-            logger.error("Failed to load calendars: \(error.localizedDescription)")
-            self.calendars = []
+    func loadCalendars() async throws {
+        let ekCalendars = try await repository.getCalendars(with: calendarPrefix)
+        let newCalendars = ekCalendars.map { calendar in
+            CalendarInfo(
+                id: calendar.calendarIdentifier,
+                title: calendar.title,
+                color: calendar.cgColor?.components?.map(String.init).joined(separator: ",") ?? ""
+            )
+        }
+        // Switch to MainActor only to update the published property.
+        await MainActor.run {
+            self.calendars = newCalendars
         }
     }
     
-    func loadCurrentActivity() {
-        do {
-            let now = Date()
-            let timeTrackingCalendars = try repository.getCalendars(with: calendarPrefix)
+    func loadCurrentActivity() async throws {
+        let now = Date()
+        let timeTrackingCalendars = try await repository.getCalendars(with: calendarPrefix)
+        
+        var newCurrentActivity: TimeActivity?
+        var newPreviousActivity: TimeActivity?
+
+        if timeTrackingCalendars.isEmpty {
+            newCurrentActivity = nil
+            newPreviousActivity = nil
+        } else {
+            // --- Get Current Activity ---
+            let currentEvents = try await repository.getEvents(from: now.addingTimeInterval(-3600), to: now.addingTimeInterval(3600), in: timeTrackingCalendars)
+            let currentEvent = currentEvents.last { $0.startDate <= now && ($0.endDate == nil || $0.endDate > now) }
+            newCurrentActivity = currentEvent.map { TimeActivity(from: $0) }
             
-            guard !timeTrackingCalendars.isEmpty else {
-                currentActivity = nil
-                AppStorageService.saveCurrentActivity(nil)
-                return
-            }
-            
-            // Ищем события, которые происходят прямо сейчас
-            let events = try repository.getEvents(
-                from: now.addingTimeInterval(-3600),
-                to: now.addingTimeInterval(3600),
-                in: timeTrackingCalendars
-            )
-            
-            let currentEvent = events.last { event in
-                event.startDate <= now && (event.endDate == nil || event.endDate > now)
-            }
-            
-            if let event = currentEvent {
-                currentActivity = TimeActivity(from: event)
-            } else {
-                currentActivity = nil
-            }
-            
-            AppStorageService.saveCurrentActivity(currentActivity)
-            loadPreviousActivity()
-            
-        } catch {
-            // TODO: Handle error properly.
-            logger.error("Failed to load current activity: \(error.localizedDescription)")
-            currentActivity = nil
-            AppStorageService.saveCurrentActivity(nil)
-        }
-    }
-    
-    func loadPreviousActivity() {
-        do {
-            let now = Date()
-            let timeTrackingCalendars = try repository.getCalendars(with: calendarPrefix)
-            
-            guard !timeTrackingCalendars.isEmpty else {
-                previousActivity = nil
-                return
-            }
-            
-            let events = try repository.getEvents(
-                from: now.addingTimeInterval(-24 * 3600),
-                to: now,
-                in: timeTrackingCalendars
-            )
-            
-            let lastEvent = events
+            // --- Get Previous Activity ---
+            let previousEvents = try await repository.getEvents(from: now.addingTimeInterval(-24 * 3600), to: now, in: timeTrackingCalendars)
+            let lastEvent = previousEvents
                 .filter { $0.endDate != nil && $0.endDate! <= now }
                 .sorted(by: { $0.endDate! > $1.endDate! })
                 .first
-                
-            if let event = lastEvent {
-                previousActivity = TimeActivity(from: event)
-            } else {
-                previousActivity = nil
-            }
-        } catch {
-            // TODO: Handle error properly.
-            logger.error("Failed to load previous activity: \(error.localizedDescription)")
-            previousActivity = nil
+            newPreviousActivity = lastEvent.map { TimeActivity(from: $0) }
+        }
+
+        // --- Perform Atomic State Update on MainActor ---
+        await MainActor.run {
+            self.currentActivity = newCurrentActivity
+            self.previousActivity = newPreviousActivity
+            AppStorageService.saveCurrentActivity(self.currentActivity)
         }
     }
     
-    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) throws {
-        let newSessionStartDate = startDate
+    func startNewSession(title: String, calendarId: String, duration: TimeInterval, startDate: Date) async throws {
+        try await endCurrentActivity(endDate: startDate)
         
-        try endCurrentActivity(endDate: newSessionStartDate)
-        
-        guard let calendar = try repository.getCalendar(withId: calendarId) else {
+        guard let calendar = try await repository.getCalendar(withId: calendarId) else {
             throw NotFound.new(errorText: "Calendar not found", humanText: "Календарь не найден")
         }
         
-        let event = EKEvent(eventStore: EKEventStore()) // Dummy store, repository will use its own
+        let event = EKEvent(eventStore: EKEventStore())
         event.title = title
-        event.startDate = newSessionStartDate
-        event.endDate = newSessionStartDate.addingTimeInterval(duration)
+        event.startDate = startDate
+        event.endDate = startDate.addingTimeInterval(duration)
         event.calendar = calendar
         
-        try repository.saveEvent(event)
-        
-        loadCurrentActivity()
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
     
-    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) throws {
-        guard let event = try repository.getEvent(withId: activity.id) else {
-            throw NotFound.new(
-                errorText: "Cannot find event to update end time",
-                humanText: "Не найдено событие для изменения времени окончания",
-                parameters: ["activityId": activity.id]
-            )
+    func updateActivityEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) async throws {
+        guard let event = try await repository.getEvent(withId: activity.id) else {
+            throw NotFound.new(errorText: "Event to update not found", humanText: "Событие для обновления не найдено")
         }
         
         event.endDate = event.endDate.addingTimeInterval(timeInterval)
-        
-        try repository.saveEvent(event)
-        loadCurrentActivity() // Обновляем UI
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
 
-    func endCurrentActivity(endDate: Date) throws {
-        guard let activity = currentActivity else { return }
-        let eventId = activity.id.components(separatedBy: "_part").first ?? ""
+    func endCurrentActivity(endDate: Date) async throws {
+        let activityID = await MainActor.run { self.currentActivity?.id }
+        guard let activity = activityID else { return }
         
-        guard let event = try repository.getEvent(withId: eventId) else {
-            throw NotFound.new(errorText: "Event to end not found", humanText: "Событие для завершения не найдено")
-        }
+        let eventId = activity.components(separatedBy: "_part").first ?? ""
+        guard let event = try await repository.getEvent(withId: eventId) else { return }
         
         event.endDate = endDate
-        try repository.saveEvent(event)
-        
-        loadCurrentActivity()
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
 
-    func extendSession(eventId: String, by timeInterval: TimeInterval) throws {
-        guard let event = try repository.getEvent(withId: eventId) else {
+    func extendSession(eventId: String, by timeInterval: TimeInterval) async throws {
+        guard let event = try await repository.getEvent(withId: eventId) else {
             throw NotFound.new(errorText: "Event to extend not found", humanText: "Событие для продления не найдено")
         }
         
         event.endDate = Date().addingTimeInterval(timeInterval)
-        try repository.saveEvent(event)
-        
-        loadPreviousActivity()
-        loadCurrentActivity()
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
 
-    func finishSessionNow(eventId: String) throws {
-        guard let event = try repository.getEvent(withId: eventId) else {
+    func finishSessionNow(eventId: String) async throws {
+        guard let event = try await repository.getEvent(withId: eventId) else {
             throw NotFound.new(errorText: "Event to finish not found", humanText: "Событие для завершения не найдено")
         }
         
         event.endDate = Date()
-        try repository.saveEvent(event)
-        
-        loadPreviousActivity()
-        loadCurrentActivity()
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
     
-    func updateActivity(_ activity: TimeActivity) throws {
+    func updateActivity(_ activity: TimeActivity) async throws {
         let originalEventId = activity.id.components(separatedBy: "_part").first ?? activity.id
-        guard let event = try repository.getEvent(withId: originalEventId) else {
+        guard let event = try await repository.getEvent(withId: originalEventId) else {
             throw NotFound.new(errorText: "Event to update not found", humanText: "Событие для обновления не найдено")
         }
         
@@ -232,87 +157,77 @@ class CalendarService {
         event.startDate = activity.startTime
         event.endDate = activity.endTime
         
-        if let calendar = try repository.getCalendar(withId: activity.calendarId) {
+        if let calendar = try await repository.getCalendar(withId: activity.calendarId) {
             event.calendar = calendar
         }
         
-        try repository.saveEvent(event)
-        loadCurrentActivity()
+        try await repository.saveEvent(event)
+        try await loadCurrentActivity()
     }
     
-    func deleteActivity(_ activity: TimeActivity) throws {
+    func deleteActivity(_ activity: TimeActivity) async throws {
         let originalEventId = activity.id.components(separatedBy: "_part").first ?? activity.id
-        guard let event = try repository.getEvent(withId: originalEventId) else {
+        guard let event = try await repository.getEvent(withId: originalEventId) else {
             throw NotFound.new(errorText: "Event to delete not found", humanText: "Событие для удаления не найдено")
         }
         
-        try repository.deleteEvent(event)
-        loadCurrentActivity()
+        try await repository.deleteEvent(event)
+        try await loadCurrentActivity()
     }
     
-    func getActivities(from startDate: Date, to endDate: Date) -> [TimeActivity] {
-        do {
-            let timeTrackingCalendars = try repository.getCalendars(with: calendarPrefix)
-            let events = try repository.getEvents(from: startDate, to: endDate, in: timeTrackingCalendars)
-            
-            var resultingActivities: [TimeActivity] = []
+    func getActivities(from startDate: Date, to endDate: Date) async throws -> [TimeActivity] {
+        let timeTrackingCalendars = try await repository.getCalendars(with: calendarPrefix)
+        let events = try await repository.getEvents(from: startDate, to: endDate, in: timeTrackingCalendars)
+        
+        // This mapping is pure computation and can happen on a background thread.
+        var resultingActivities: [TimeActivity] = []
+        for event in events {
+            guard let eventEndDate = event.endDate else { continue }
+            let calendar = Calendar.current
+            let eventStartDate = event.startDate!
 
-            for event in events {
-                guard let eventEndDate = event.endDate else { continue }
-
-                let calendar = Calendar.current
-                let eventStartDate = event.startDate!
-
-                if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
-                    if eventStartDate != eventEndDate {
-                        resultingActivities.append(TimeActivity(from: event))
+            if calendar.isDate(eventStartDate, inSameDayAs: eventEndDate) || eventEndDate == calendar.startOfDay(for: eventEndDate) {
+                if eventStartDate != eventEndDate { resultingActivities.append(TimeActivity(from: event)) }
+            } else {
+                var currentDate = eventStartDate
+                var partIndex = 1
+                while currentDate < eventEndDate {
+                    let startOfNextDay = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate)!)
+                    let endOfThisSegment = min(startOfNextDay, eventEndDate)
+                    if currentDate < endOfThisSegment {
+                        resultingActivities.append(TimeActivity(
+                            id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
+                            title: event.title,
+                            calendarId: event.calendar.calendarIdentifier,
+                            calendarName: event.calendar.title,
+                            startTime: currentDate,
+                            endTime: endOfThisSegment,
+                            category: event.calendar.title
+                        ))
                     }
-                } else {
-                    var currentDate = eventStartDate
-                    var partIndex = 1
-                    while currentDate < eventEndDate {
-                        let startOfNextDay = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate)!)
-                        let endOfThisSegment = min(startOfNextDay, eventEndDate)
-                        if currentDate < endOfThisSegment {
-                            let activityPart = TimeActivity(
-                                id: "\(event.eventIdentifier ?? UUID().uuidString)_part\(partIndex)",
-                                title: event.title,
-                                calendarId: event.calendar.calendarIdentifier,
-                                calendarName: event.calendar.title,
-                                startTime: currentDate,
-                                endTime: endOfThisSegment,
-                                category: event.calendar.title
-                            )
-                            resultingActivities.append(activityPart)
-                        }
-                        currentDate = endOfThisSegment
-                        partIndex += 1
-                    }
+                    currentDate = endOfThisSegment
+                    partIndex += 1
                 }
             }
-            return resultingActivities
-        } catch {
-            // TODO: Handle error properly
-            logger.error("Failed to get activities: \(error.localizedDescription)")
-            return []
         }
+        return resultingActivities
     }
     
-    func getActivity(by id: String) throws -> TimeActivity {
+    func getActivity(by id: String) async throws -> TimeActivity {
         let originalEventId = id.components(separatedBy: "_part").first ?? id
         
-        guard let event = try repository.getEvent(withId: originalEventId) else {
+        guard let event = try await repository.getEvent(withId: originalEventId) else {
             throw NotFound.new(errorText: "Event not found by id", humanText: "Событие не найдено по ID")
         }
         
         return TimeActivity(from: event)
     }
     
-    func getUniqueRecentActivities() -> [TimeActivity] {
+    func getUniqueRecentActivities() async throws -> [TimeActivity] {
         let endDate = Date()
         let startDate = Calendar.current.date(byAdding: .year, value: -1, to: endDate)!
         
-        let allActivities = getActivities(from: startDate, to: endDate)
+        let allActivities = try await getActivities(from: startDate, to: endDate)
         
         var uniqueActivities: [TimeActivity] = []
         var seenTuples = Set<String>()
@@ -328,12 +243,14 @@ class CalendarService {
         return uniqueActivities
     }
     
-    // MARK: - Calendar Synchronization
-    
     @objc private func calendarDidChange() {
         logger.debug("Calendar data changed, reloading activities...")
-        DispatchQueue.main.async { [weak self] in
-            self?.loadCurrentActivity()
+        Task {
+            do {
+                try await loadCurrentActivity()
+            } catch {
+                logger.error("Failed to reload on calendar change: \(error.localizedDescription)")
+            }
         }
     }
     

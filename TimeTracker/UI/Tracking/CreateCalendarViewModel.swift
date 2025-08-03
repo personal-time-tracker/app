@@ -5,6 +5,7 @@ import OSLog
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
 
+@MainActor
 @Observable
 class CreateCalendarViewModel {
     
@@ -13,14 +14,11 @@ class CreateCalendarViewModel {
     
     var calendarTitle: String = ""
     
-    let calendarPrefix: String
+    var calendarPrefix: String {
+        calendarService.calendarPrefix
+    }
     
     var alert: AlertModel?
-    
-    init() {
-        let service = Container.shared.calendarService()
-        self.calendarPrefix = service.calendarPrefix
-    }
     
     var isTitleValid: Bool {
         !calendarTitle.trimmingCharacters(in: .whitespaces).isEmpty
@@ -29,11 +27,13 @@ class CreateCalendarViewModel {
     func createCalendar() {
         guard isTitleValid else { return }
         let title = calendarTitle.trimmingCharacters(in: .whitespaces)
-        let fullTitle = "\(calendarPrefix) \(title)"
-        do {
-            try calendarService.createCalendar(title: fullTitle)
-        } catch {
-            alert = AlertModel(error: error)
+        
+        Task {
+            do {
+                try await calendarService.createCalendar(title: title)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
 }

@@ -21,8 +21,8 @@ struct TImeTracerApp: App {
         WindowGroup {
             ContentView()
         }
-        .onChange(of: scenePhase) { phase in
-            if phase == .background {
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .background {
                 scheduleAppRefresh()
             }
         }
@@ -53,27 +53,29 @@ struct TImeTracerApp: App {
     private func handleAppRefresh(task: BGAppRefreshTask) {
         scheduleAppRefresh() // Планируем следующее обновление
 
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-
-        let operation = BlockOperation {
-            let calendarService = CalendarService()
-            calendarService.loadCurrentActivity() // Обновляем данные
-            print("Background refresh completed")
-            task.setTaskCompleted(success: true)
-        }
-
         task.expirationHandler = {
-            operation.cancel()
+            // Task has expired. Clean up.
             print("Background task expired")
         }
 
-        queue.addOperation(operation)
+        // Выполняем асинхронную работу в Task
+        Task {
+            let calendarService = Container.shared.calendarService()
+            do {
+                try await calendarService.loadCurrentActivity()
+                print("Background refresh completed successfully")
+                task.setTaskCompleted(success: true)
+            } catch {
+                print("Background refresh failed: \(error)")
+                task.setTaskCompleted(success: false)
+            }
+        }
     }
 }
 
 extension Container {
+    // CalendarService is no longer a MainActor, so we don't need any special handling here.
     var calendarService: Factory<CalendarService> {
-        Factory(self) { return CalendarService() }.singleton
+        Factory(self) { CalendarService() }.singleton
     }
 }

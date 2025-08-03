@@ -10,6 +10,7 @@ enum EditActivityMode {
     case update
 }
 
+@MainActor
 @Observable
 class EditActivityViewModel {
     
@@ -29,31 +30,37 @@ class EditActivityViewModel {
     init(activity: TimeActivity, mode: EditActivityMode) {
         self.mode = mode
         
-        do {
-            // "Склеиваем" событие: по ID "осколка" загружаем полную версию
-            let fullActivity = try calendarService.getActivity(by: activity.id)
-            self.currentActivity = fullActivity
-            self.oldActivity = fullActivity
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                // "Склеиваем" событие: по ID "осколка" загружаем полную версию
+                let fullActivity = try await calendarService.getActivity(by: activity.id)
+                self.currentActivity = fullActivity
+                self.oldActivity = fullActivity
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
     
     func save() {
         guard let activity = currentActivity else { return }
-        do {
-            try calendarService.updateActivity(activity)
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.updateActivity(activity)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
     
     func delete() {
         guard let activity = oldActivity else { return }
-        do {
-            try calendarService.deleteActivity(activity)
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.deleteActivity(activity)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
 }

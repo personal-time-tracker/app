@@ -9,6 +9,7 @@ struct AnalyticsTab: View {
 
     @State private var selectedPeriod: AnalyticsPeriod = .week
     @State private var activities: [TimeActivity] = []
+    @State private var alert: AlertModel?
     
     enum AnalyticsPeriod: String, CaseIterable {
         case day = "День"
@@ -56,18 +57,23 @@ struct AnalyticsTab: View {
                 .padding()
             }
             .navigationTitle("Аналитика")
-            .onAppear {
-                loadactivities()
-            }
-            .onChange(of: selectedPeriod) { _ in
-                loadactivities()
+            .onAppear(perform: loadActivities)
+            .onChange(of: selectedPeriod) { _ in loadActivities() }
+            .alert(item: $alert) { alert in
+                Alert(title: Text(alert.title), message: Text(alert.message), dismissButton: .default(Text("OK")))
             }
         }
     }
     
-    private func loadactivities() {
-        let interval = selectedPeriod.dateInterval
-        activities = calendarService.getActivities(from: interval.start, to: interval.end)
+    private func loadActivities() {
+        Task {
+            do {
+                let interval = selectedPeriod.dateInterval
+                self.activities = try await calendarService.getActivities(from: interval.start, to: interval.end)
+            } catch {
+                self.alert = AlertModel(error: error)
+            }
+        }
     }
 }
 

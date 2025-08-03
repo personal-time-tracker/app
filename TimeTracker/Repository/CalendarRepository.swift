@@ -18,24 +18,33 @@ class CalendarRepository {
         if #available(iOS 17.0, *) {
             return try await eventStore.requestFullAccessToEvents()
         } else {
-            return try await eventStore.requestAccess(to: .event)
+            // Using a continuation to bridge the gap for the older callback-based API.
+            return try await withCheckedThrowingContinuation { continuation in
+                eventStore.requestAccess(to: .event) { granted, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: granted)
+                    }
+                }
+            }
         }
     }
     
     // MARK: - Calendars
     
-    func getCalendars(with prefix: String) throws -> [EKCalendar] {
-        try checkAccess()
+    func getCalendars(with prefix: String) async throws -> [EKCalendar] {
+        try await checkAccessAndRequestIfNeeded()
         return eventStore.calendars(for: .event).filter { $0.title.contains(prefix) }
     }
     
-    func getCalendar(withId id: String) throws -> EKCalendar? {
-        try checkAccess()
+    func getCalendar(withId id: String) async throws -> EKCalendar? {
+        try await checkAccessAndRequestIfNeeded()
         return eventStore.calendar(withIdentifier: id)
     }
     
-    func saveCalendar(_ calendar: EKCalendar) throws {
-        try checkAccess()
+    func saveCalendar(_ calendar: EKCalendar) async throws {
+        try await checkAccessAndRequestIfNeeded()
         do {
             try eventStore.saveCalendar(calendar, commit: true)
         } catch {
@@ -43,8 +52,8 @@ class CalendarRepository {
         }
     }
     
-    func createCalendar(title: String) throws -> EKCalendar {
-        try checkAccess()
+    func createCalendar(title: String) async throws -> EKCalendar {
+        try await checkAccessAndRequestIfNeeded()
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         newCalendar.title = title
         
@@ -54,25 +63,25 @@ class CalendarRepository {
             newCalendar.source = eventStore.defaultCalendarForNewEvents?.source
         }
         
-        try saveCalendar(newCalendar)
+        try await saveCalendar(newCalendar)
         return newCalendar
     }
     
     // MARK: - Events
     
-    func getEvents(from startDate: Date, to endDate: Date, in calendars: [EKCalendar]) throws -> [EKEvent] {
-        try checkAccess()
+    func getEvents(from startDate: Date, to endDate: Date, in calendars: [EKCalendar]) async throws -> [EKEvent] {
+        try await checkAccessAndRequestIfNeeded()
         let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: calendars)
         return eventStore.events(matching: predicate)
     }
     
-    func getEvent(withId id: String) throws -> EKEvent? {
-        try checkAccess()
+    func getEvent(withId id: String) async throws -> EKEvent? {
+        try await checkAccessAndRequestIfNeeded()
         return eventStore.event(withIdentifier: id)
     }
     
-    func saveEvent(_ event: EKEvent) throws {
-        try checkAccess()
+    func saveEvent(_ event: EKEvent) async throws {
+        try await checkAccessAndRequestIfNeeded()
         do {
             try eventStore.save(event, span: .thisEvent)
         } catch {
@@ -80,8 +89,8 @@ class CalendarRepository {
         }
     }
     
-    func deleteEvent(_ event: EKEvent) throws {
-        try checkAccess()
+    func deleteEvent(_ event: EKEvent) async throws {
+        try await checkAccessAndRequestIfNeeded()
         do {
             try eventStore.remove(event, span: .thisEvent)
         } catch {
@@ -106,12 +115,27 @@ class CalendarRepository {
     
     // MARK: - Private Helpers
     
-    private func checkAccess() throws {
-        let status = getAuthorizationStatus()
+    private func checkAccessAndRequestIfNeeded() async throws {
+        var status = getAuthorizationStatus()
+        
+        if status == .notDetermined {
+            logger.debug("Calendar access not determined. Requesting now.")
+            let granted = try await requestAccess()
+            if !granted {
+                throw UserError.new(
+                    errorText: "calendar access was denied by user",
+                    humanText: "Доступ к календарю не был предоставлен."
+                )
+            }
+        }
+        
+        // Re-check status after potential request
+        status = getAuthorizationStatus()
+        
         guard status == .authorized || status == .fullAccess || status == .writeOnly else {
             throw UserError.new(
                 errorText: "cannot get calendar access",
-                humanText: "Для работы приложения необходим доступ к календарю"
+                humanText: "Для работы приложения необходим доступ к календарю. Пожалуйста, включите его в Настройках."
             )
         }
     }

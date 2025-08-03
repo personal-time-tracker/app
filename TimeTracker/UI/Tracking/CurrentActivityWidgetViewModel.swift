@@ -12,7 +12,7 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
-
+@MainActor
 @Observable
 class CurrentActivityWidgetViewModel {
     
@@ -24,10 +24,17 @@ class CurrentActivityWidgetViewModel {
     
     var alert: AlertModel?
     
-    init() {
+    func startTimer() {
+        // Invalidate any existing timer before creating a new one
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.currentDate = Date()
         }
+    }
+    
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func progress(for activity: TimeActivity) -> Double {
@@ -48,22 +55,22 @@ class CurrentActivityWidgetViewModel {
     }
     
     func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
-        do {
-            try calendarService.updateActivityEndTime(for: activity, by: timeInterval)
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
     }
     
     func finishSessionNow(eventId: String) {
-        do {
-            try calendarService.finishSessionNow(eventId: eventId)
-        } catch {
-            alert = AlertModel(error: error)
+        Task {
+            do {
+                try await calendarService.finishSessionNow(eventId: eventId)
+            } catch {
+                alert = AlertModel(error: error)
+            }
         }
-    }
-
-    deinit {
-        timer?.invalidate()
     }
 }

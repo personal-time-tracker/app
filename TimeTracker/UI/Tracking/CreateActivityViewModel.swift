@@ -44,24 +44,27 @@ class CreateActivityViewModel {
         calendarService.calendarPrefix
     }
     
-    func refreshCalendarsIfNeeded() {
-        if calendarService.calendars.isEmpty {
-            calendarService.loadCalendars()
-        }
-        
-        // Загружаем недавние активности
-        recentActivities = calendarService.getUniqueRecentActivities()
-        
-        // Если остался только один календарь, выбираем его автоматически
-        if calendars.count == 1 {
-            selectedCalendarId = calendars.first?.id ?? ""
+    func refreshData() {
+        Task {
+            do {
+                if calendarService.calendars.isEmpty {
+                    try await calendarService.loadCalendars()
+                }
+                self.recentActivities = try await calendarService.getUniqueRecentActivities()
+                
+                if calendars.count == 1 {
+                    selectedCalendarId = calendars.first?.id ?? ""
+                }
+            } catch {
+                self.alert = AlertModel(error: error)
+            }
         }
     }
     
     var canStartActivity: Bool {
         !activityTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !selectedCalendarId.isEmpty &&
-        (hours > 0 || minutes > 0) // Продолжительность должна быть больше нуля
+        (hours > 0 || minutes > 0)
     }
     
     func selectSuggestion(_ activity: TimeActivity) {
@@ -75,16 +78,12 @@ class CreateActivityViewModel {
         }
     }
     
-    func startActivity() {
+    // This function is now async and throws, allowing the View to await its result.
+    func startActivity() async throws {
         guard canStartActivity else { return }
         let trimmedTitle = activityTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        
         let timeInterval = TimeInterval(hours * 3600 + minutes * 60)
         
-        do {
-            try calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
-        } catch {
-            alert = AlertModel(error: error)
-        }
+        try await calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
     }
 }

@@ -20,18 +20,24 @@ class HistoryViewModel {
     }
     
     init() {
-        fetchActivities()
+        Task {
+            await fetchActivities()
+        }
     }
     
-    func fetchActivities() {
-        let endDate = Date()
-        let startDate = Calendar.current.date(byAdding: .year, value: -1, to: endDate)!
-        let activities = calendarService.getActivities(from: startDate, to: endDate)
-        
-        activitiesByDate = Dictionary(grouping: activities, by: { activity in
-            Calendar.current.startOfDay(for: activity.startTime)
-        }).mapValues { activities in
-            activities.sorted(by: { $0.startTime > $1.startTime })
+    func fetchActivities() async {
+        do {
+            let endDate = Date()
+            let startDate = Calendar.current.date(byAdding: .year, value: -1, to: endDate)!
+            let activities = try await calendarService.getActivities(from: startDate, to: endDate)
+            
+            activitiesByDate = Dictionary(grouping: activities, by: { activity in
+                Calendar.current.startOfDay(for: activity.startTime)
+            }).mapValues { activities in
+                activities.sorted(by: { $0.startTime > $1.startTime })
+            }
+        } catch {
+            alert = AlertModel(error: error)
         }
     }
 }

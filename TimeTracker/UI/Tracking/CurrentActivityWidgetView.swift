@@ -91,6 +91,8 @@ struct CurrentActivityWidgetView: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .alert(item: $vm.alert) { $0.asAlert }
+        .onAppear(perform: vm.startTimer)
+        .onDisappear(perform: vm.stopTimer)
     }
 }
 
