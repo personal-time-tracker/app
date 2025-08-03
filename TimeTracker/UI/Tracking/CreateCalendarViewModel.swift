@@ -31,7 +31,7 @@ class CreateCalendarViewModel {
         let title = calendarTitle.trimmingCharacters(in: .whitespaces)
         let fullTitle = "\(calendarPrefix) \(title)"
         do {
-            try calendarService.createCalendar(fullTitle: fullTitle)
+            try calendarService.createCalendar(title: fullTitle)
         } catch {
             alert = AlertModel(error: error)
         }
