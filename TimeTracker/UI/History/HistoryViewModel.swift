@@ -1,5 +1,9 @@
 import Foundation
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 @Observable
 class HistoryViewModel {
@@ -9,6 +13,7 @@ class HistoryViewModel {
     
     var activitiesByDate: [Date: [TimeActivity]] = [:]
     
+    var alert: AlertModel?
     
     var sortedDates: [Date] {
         activitiesByDate.keys.sorted(by: { $0 > $1 })

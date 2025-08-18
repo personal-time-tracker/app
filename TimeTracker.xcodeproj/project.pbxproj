@@ -77,8 +77,10 @@
 			membershipExceptions = (
 				Model/CalendarInfo.swift,
 				Model/TimeActivity.swift,
+				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Utils/Error.swift,
 			);
 			target = B59C426B2E3759090075F759 /* TimeTrackerWidgetExtentionDevExtension */;
 		};
@@ -93,6 +95,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Utils/Formatters.swift,
 			);
 			target = B59C423D2E3758620075F759 /* TimeTrackerDev */;
 		};
@@ -100,6 +103,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Utils/Formatters.swift,
 			);
 			target = B5E723AC2E35C06A00022C8D /* TimeTracker */;
 		};
@@ -115,20 +119,41 @@
 			membershipExceptions = (
 				Model/CalendarInfo.swift,
 				Model/TimeActivity.swift,
+				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				Utils/Error.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTrackerWidgetExtensionExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		B5AEA3BB2E3F540700B990B2 /* Exceptions for "TimeTracker" folder in "Copy Bundle Resources" phase from "TimeTracker" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = B5E723AB2E35C06A00022C8D /* Resources */;
+			membershipExceptions = (
+				Utils/Formatters.swift,
+			);
+		};
+		B5AEA3BC2E3F540700B990B2 /* Exceptions for "TimeTracker" folder in "Copy Bundle Resources" phase from "TimeTrackerDev" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = B59C423C2E3758620075F759 /* Resources */;
+			membershipExceptions = (
+				Utils/Formatters.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B5E723AF2E35C06A00022C8D /* TimeTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B59C42992E375B270075F759 /* Exceptions for "TimeTracker" folder in "TimeTracker" target */,
+				B5AEA3BB2E3F540700B990B2 /* Exceptions for "TimeTracker" folder in "Copy Bundle Resources" phase from "TimeTracker" target */,
 				B5E724182E35D86100022C8D /* Exceptions for "TimeTracker" folder in "TimeTrackerWidgetExtensionExtension" target */,
 				B59C42972E375A7D0075F759 /* Exceptions for "TimeTracker" folder in "TimeTrackerDev" target */,
+				B5AEA3BC2E3F540700B990B2 /* Exceptions for "TimeTracker" folder in "Copy Bundle Resources" phase from "TimeTrackerDev" target */,
 				B59C428A2E37592A0075F759 /* Exceptions for "TimeTracker" folder in "TimeTrackerWidgetExtentionDevExtension" target */,
 			);
 			path = TimeTracker;
@@ -456,12 +481,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTrackerDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -489,12 +514,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTrackerDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -518,13 +543,13 @@
 				INFOPLIST_FILE = TimeTrackerWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TimeTrackerWidgetExtentionDev;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTrackerDev.TimeTrackerWidgetExtentionDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -548,13 +573,13 @@
 				INFOPLIST_FILE = TimeTrackerWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TimeTrackerWidgetExtentionDev;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTrackerDev.TimeTrackerWidgetExtentionDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -711,11 +736,11 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -758,11 +783,11 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -789,13 +814,13 @@
 				INFOPLIST_FILE = TimeTrackerWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TimeTracerWidgetExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker.TimeTrackerWidgetExtention;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -819,13 +844,13 @@
 				INFOPLIST_FILE = TimeTrackerWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TimeTracerWidgetExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bonavii.TimeTracker.TimeTrackerWidgetExtention;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

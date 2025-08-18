@@ -1,4 +1,8 @@
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 struct SettingsView: View {
 
@@ -8,45 +12,46 @@ struct SettingsView: View {
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
     @AppStorage("selectedTheme") private var selectedTheme: Theme = .system
     
+    @State private var alert: AlertModel?
+    
     var body: some View {
-        NavigationView {
-            Form {
-                Section("Оформление") {
-                    Picker("Тема", selection: $selectedTheme) {
-                        ForEach(Theme.allCases) { theme in
-                            Text(theme.displayName).tag(theme)
-                        }
+        Form {
+            Section("Оформление") {
+                Picker("Тема", selection: $selectedTheme) {
+                    ForEach(Theme.allCases) { theme in
+                        Text(theme.displayName).tag(theme)
                     }
                 }
+            }
+            
+            Section(
+                header: Text("Префикс календарей"),
+                footer: Text("Приложение будет работать только с календарями, содержащими выбранный префикс в названии")
+            ) {
                 
-                Section(
-                    header: Text("Префикс календарей"),
-                    footer: Text("Приложение будет работать только с календарями, содержащими выбранный префикс в названии")
-                ) {
-                    
-                    HStack {
-                        Text("Текущий префикс")
-                        Spacer()
-                        Button(calendarPrefix) {
-                            showingPrefixPicker = true
-                        }
-                        .foregroundColor(.blue)
+                HStack {
+                    Text("Текущий префикс")
+                    Spacer()
+                    Button(calendarPrefix) {
+                        showingPrefixPicker = true
                     }
+                    .foregroundColor(.blue)
                 }
-            }
-            .navigationTitle("Настройки")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
-                        dismiss()
-                    }
-                }
-            }
-            .sheet(isPresented: $showingPrefixPicker) {
-                PrefixPickerView(selectedPrefix: $calendarPrefix)
             }
         }
+        .navigationTitle("Настройки")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Готово") {
+                    dismiss()
+                }
+            }
+        }
+        .sheet(isPresented: $showingPrefixPicker) {
+            PrefixPickerView(selectedPrefix: $calendarPrefix)
+        }
+        .alert(item: $alert) { $0.asAlert }
     }
 }
 

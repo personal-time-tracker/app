@@ -1,5 +1,8 @@
 import SwiftUI
 import WidgetKit
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
 struct AppStorageService {
     @AppStorage("currentActivity", store: UserDefaults(suiteName: "group.com.timetracer.app"))

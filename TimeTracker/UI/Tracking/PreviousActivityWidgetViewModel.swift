@@ -7,6 +7,10 @@
 
 import Foundation
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 @Observable
 class PreviousActivityWidgetViewModel {
@@ -16,6 +20,8 @@ class PreviousActivityWidgetViewModel {
     
     private var timer: Timer?
     var currentDate = Date()
+    
+    var alert: AlertModel?
     
     init() {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -32,14 +38,22 @@ class PreviousActivityWidgetViewModel {
         eventId: String,
         by duration: TimeInterval
     ) {
-        calendarService.extendSession(
-            eventId: eventId,
-            by: duration
-        )
+        do {
+            try calendarService.extendSession(
+                eventId: eventId,
+                by: duration
+            )
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     func finishSessionNow(eventId: String) {
-        calendarService.finishSessionNow(eventId: eventId)
+        do {
+            try calendarService.finishSessionNow(eventId: eventId)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     deinit {

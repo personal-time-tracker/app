@@ -1,5 +1,8 @@
 import SwiftUI
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
 @MainActor
 @Observable
@@ -17,6 +20,8 @@ class CreateActivityViewModel {
     var startTime = Date()
     
     var recentActivities: [TimeActivity] = []
+    
+    var alert: AlertModel?
     
     var filteredActivities: [TimeActivity] {
         if activityTitle.isEmpty {
@@ -70,13 +75,17 @@ class CreateActivityViewModel {
         }
     }
     
-    func startActivity() {
+    func startActivity() throws {
         guard canStartActivity else { return }
         let trimmedTitle = activityTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         
         let timeInterval = TimeInterval(hours * 3600 + minutes * 60)
         
-        // Task и await здесь не нужны, так как и ViewModel, и Service - MainActor
-        calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
+        do {
+            try calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
+        } catch {
+            alert = AlertModel(error: error)
+            throw error
+        }
     }
-} 
+}

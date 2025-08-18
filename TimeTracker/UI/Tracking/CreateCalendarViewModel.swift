@@ -1,5 +1,9 @@
 import SwiftUI
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 @Observable
 class CreateCalendarViewModel {
@@ -10,6 +14,8 @@ class CreateCalendarViewModel {
     var calendarTitle: String = ""
     
     let calendarPrefix: String
+    
+    var alert: AlertModel?
     
     init() {
         let service = Container.shared.calendarService()
@@ -24,6 +30,10 @@ class CreateCalendarViewModel {
         guard isTitleValid else { return }
         let title = calendarTitle.trimmingCharacters(in: .whitespaces)
         let fullTitle = "\(calendarPrefix) \(title)"
-        calendarService.createCalendar(fullTitle: fullTitle)
+        do {
+            try calendarService.createCalendar(title: fullTitle)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
-} 
+}

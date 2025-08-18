@@ -8,6 +8,10 @@
 import Foundation
 import SwiftUI
 import Factory
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
+
 
 @Observable
 class CurrentActivityWidgetViewModel {
@@ -17,6 +21,8 @@ class CurrentActivityWidgetViewModel {
     
     private var timer: Timer?
     var currentDate = Date()
+    
+    var alert: AlertModel?
     
     init() {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -42,11 +48,19 @@ class CurrentActivityWidgetViewModel {
     }
     
     func updateEndTime(for activity: TimeActivity, by timeInterval: TimeInterval) {
-        calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+        do {
+            try calendarService.updateActivityEndTime(for: activity, by: timeInterval)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
     
     func finishSessionNow(eventId: String) {
-        calendarService.finishSessionNow(eventId: eventId)
+        do {
+            try calendarService.finishSessionNow(eventId: eventId)
+        } catch {
+            alert = AlertModel(error: error)
+        }
     }
 
     deinit {

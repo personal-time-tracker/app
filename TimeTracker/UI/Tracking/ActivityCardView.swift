@@ -3,6 +3,8 @@ import SwiftUI
 struct ActivityCardView: View {
     let activity: TimeActivity
     
+    @State private var alert: AlertModel?
+    
     // Данные, которые передаются "сверху"
     let progress: Double
     let progressColor: Color
@@ -72,6 +74,7 @@ struct ActivityCardView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .alert(item: $alert) { $0.asAlert }
     }
     
     // Вынес в отдельное View, чтобы не дублировать код

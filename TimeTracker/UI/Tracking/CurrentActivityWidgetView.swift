@@ -90,6 +90,7 @@ struct CurrentActivityWidgetView: View {
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(16)
+        .alert(item: $vm.alert) { $0.asAlert }
     }
 }
 

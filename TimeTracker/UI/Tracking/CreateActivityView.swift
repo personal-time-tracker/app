@@ -103,8 +103,12 @@ struct CreateActivityView: View {
                 
                 // Кнопка начала
                 Button(action: {
-                    vm.startActivity()
-                    dismiss()
+                    do {
+                        try vm.startActivity()
+                        dismiss()
+                    } catch {
+                        
+                    }
                 }) {
                     HStack {
                         Image(systemName: "play.fill")
@@ -132,6 +136,7 @@ struct CreateActivityView: View {
                 vm.refreshCalendarsIfNeeded()
                 isTitleFieldFocused = true
             }
+            .alert(item: $vm.alert) { $0.asAlert }
         }
     }
     

@@ -58,6 +58,7 @@ struct EditActivityView: View {
             }
             .navigationTitle("Изменить активность")
             .navigationBarTitleDisplayMode(.inline)
+            .alert(item: $vm.alert) { $0.asAlert }
         } else {
             ProgressView()
                 .navigationTitle("Загрузка...")
