@@ -75,7 +75,7 @@ class CreateActivityViewModel {
         }
     }
     
-    func startActivity() {
+    func startActivity() throws {
         guard canStartActivity else { return }
         let trimmedTitle = activityTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -85,6 +85,7 @@ class CreateActivityViewModel {
             try calendarService.startNewSession(title: trimmedTitle, calendarId: selectedCalendarId, duration: timeInterval, startDate: startTime)
         } catch {
             alert = AlertModel(error: error)
+            throw error
         }
     }
 }

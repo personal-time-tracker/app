@@ -103,8 +103,12 @@ struct CreateActivityView: View {
                 
                 // Кнопка начала
                 Button(action: {
-                    vm.startActivity()
-                    dismiss()
+                    do {
+                        try vm.startActivity()
+                        dismiss()
+                    } catch {
+                        
+                    }
                 }) {
                     HStack {
                         Image(systemName: "play.fill")

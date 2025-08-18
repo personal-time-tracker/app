@@ -158,7 +158,7 @@ class CalendarService {
             throw NotFound.new(errorText: "Calendar not found", humanText: "Календарь не найден")
         }
         
-        let event = EKEvent(eventStore: EKEventStore()) // Dummy store, repository will use its own
+        let event = EKEvent(eventStore: repository.eventStore) // Dummy store, repository will use its own
         event.title = title
         event.startDate = newSessionStartDate
         event.endDate = newSessionStartDate.addingTimeInterval(duration)

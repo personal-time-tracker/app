@@ -6,7 +6,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTrac
 
 class CalendarRepository {
     
-    private let eventStore = EKEventStore()
+    let eventStore = EKEventStore()
     
     // MARK: - Authorization
     

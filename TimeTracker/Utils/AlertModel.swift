@@ -31,6 +31,7 @@ struct AlertModel: Identifiable {
         var message = ""
         if var existing = error as? AppError {
             message = existing.humanText
+            message = message + "\n\n" + existing.developerText
         } else {
             logger.error("Ошибка не обернута")
             message = ""
