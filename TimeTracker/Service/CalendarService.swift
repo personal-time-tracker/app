@@ -3,6 +3,7 @@ import EventKit
 import Combine
 import SwiftUI
 import OSLog
+import ActivityKit
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
@@ -14,6 +15,12 @@ class CalendarService {
     var calendars: [CalendarInfo] = []
     var currentActivity: TimeActivity?
     var previousActivity: TimeActivity?
+    
+    @ObservationIgnored
+    var currentLiveActivity: Activity<TimeTrackerLiveActivityAttributes>?
+    
+    @ObservationIgnored
+    var currentLiveActivityId: String?
     
     @ObservationIgnored
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
@@ -35,6 +42,7 @@ class CalendarService {
         }
         
         repository.addObserver(self, selector: #selector(calendarDidChange))
+		Task { await self.syncLiveActivity() }
     }
     
     func requestAccess() {
@@ -85,6 +93,7 @@ class CalendarService {
             guard !timeTrackingCalendars.isEmpty else {
                 currentActivity = nil
                 AppStorageService.saveCurrentActivity(nil)
+				Task { await self.endLiveActivities() }
                 return
             }
             
@@ -108,11 +117,14 @@ class CalendarService {
             AppStorageService.saveCurrentActivity(currentActivity)
             loadPreviousActivity()
             
+			Task { await self.syncLiveActivity() }
+            
         } catch {
             // TODO: Handle error properly.
             logger.error("Failed to load current activity: \(error.localizedDescription)")
             currentActivity = nil
             AppStorageService.saveCurrentActivity(nil)
+			Task { await self.endLiveActivities() }
         }
     }
     

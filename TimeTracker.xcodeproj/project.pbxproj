@@ -80,6 +80,9 @@
 				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				"Service/CalendarService+LiveActivity.swift",
+				UI/Tracking/ActivityCardView.swift,
+				Utils/AlertModel.swift,
 				Utils/Error.swift,
 			);
 			target = B59C426B2E3759090075F759 /* TimeTrackerWidgetExtentionDevExtension */;
@@ -107,6 +110,20 @@
 			);
 			target = B5E723AC2E35C06A00022C8D /* TimeTracker */;
 		};
+		B5A0A2DB2E5415E500CEB21C /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LiveActivityWidget.swift,
+			);
+			target = B5E723AC2E35C06A00022C8D /* TimeTracker */;
+		};
+		B5A0A2DC2E5415E500CEB21C /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTrackerDev" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LiveActivityWidget.swift,
+			);
+			target = B59C423D2E3758620075F759 /* TimeTrackerDev */;
+		};
 		B5E724032E35D3BA00022C8D /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTrackerWidgetExtensionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -122,6 +139,9 @@
 				Repository/CalendarRepository.swift,
 				Service/AppStorageService.swift,
 				Service/CalendarService.swift,
+				"Service/CalendarService+LiveActivity.swift",
+				UI/Tracking/ActivityCardView.swift,
+				Utils/AlertModel.swift,
 				Utils/Error.swift,
 			);
 			target = B5E723E82E35D3B900022C8D /* TimeTrackerWidgetExtensionExtension */;
@@ -162,7 +182,9 @@
 		B5E723EF2E35D3B900022C8D /* TimeTrackerWidgetExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				B5A0A2DB2E5415E500CEB21C /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTracker" target */,
 				B5E724032E35D3BA00022C8D /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTrackerWidgetExtensionExtension" target */,
+				B5A0A2DC2E5415E500CEB21C /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTrackerDev" target */,
 				B59C428C2E37595F0075F759 /* Exceptions for "TimeTrackerWidgetExtension" folder in "TimeTrackerWidgetExtentionDevExtension" target */,
 			);
 			path = TimeTrackerWidgetExtension;

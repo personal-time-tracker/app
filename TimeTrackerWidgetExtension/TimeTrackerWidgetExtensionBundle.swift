@@ -12,5 +12,6 @@ import SwiftUI
 struct TimeTracerWidgetExtensionBundle: WidgetBundle {
     var body: some Widget {
         TimeTracerWidget()
+        TimeTrackerLiveActivityWidget()
     }
 }

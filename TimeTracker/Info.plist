@@ -8,6 +8,10 @@
 	<array>
 		<string>com.bonavi.timetracer.refresh</string>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Необходим доступ к календарю для создания событий ваших действий и формирования статистики</string>
 	<key>UIBackgroundModes</key>
