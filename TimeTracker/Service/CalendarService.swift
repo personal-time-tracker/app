@@ -15,6 +15,7 @@ class CalendarService {
     var calendars: [CalendarInfo] = []
     var currentActivity: TimeActivity?
     var previousActivity: TimeActivity?
+    var authorizationStatus: EKAuthorizationStatus = .notDetermined
     
     @ObservationIgnored
     var currentLiveActivity: Activity<TimeTrackerLiveActivityAttributes>?
@@ -27,6 +28,7 @@ class CalendarService {
         
     init() {
         let status = repository.getAuthorizationStatus()
+        authorizationStatus = status
         
         switch status {
         case .notDetermined:
@@ -47,18 +49,30 @@ class CalendarService {
     
     func requestAccess() {
         Task {
-            do {
-                let granted = try await repository.requestAccess()
-                if granted {
-                    await MainActor.run {
-                        self.loadCalendars()
-                        self.loadCurrentActivity()
-                    }
-                }
-            } catch {
-                // TODO: Handle error properly.
-                logger.error("Error requesting calendar access: \(error.localizedDescription)")
-            }
+            _ = await requestFullAccess()
+        }
+    }
+    
+    /// Показывает системный запрос, если iOS это разрешает. Возвращает true, если доступ получен.
+    func requestFullAccess() async -> Bool {
+        var granted = false
+        do {
+            granted = try await repository.requestAccess()
+        } catch {
+            // TODO: Handle error properly.
+            logger.error("Error requesting calendar access: \(error.localizedDescription)")
+        }
+        await MainActor.run {
+            self.refreshAuthorizationStatus()
+        }
+        return granted
+    }
+    
+    func refreshAuthorizationStatus() {
+        authorizationStatus = repository.getAuthorizationStatus()
+        if authorizationStatus == .fullAccess || authorizationStatus == .authorized {
+            loadCalendars()
+            loadCurrentActivity()
         }
     }
     
