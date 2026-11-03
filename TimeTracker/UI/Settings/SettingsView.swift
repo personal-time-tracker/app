@@ -1,5 +1,7 @@
 import SwiftUI
 import OSLog
+import EventKit
+import Factory
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTracker", category: "CalendarService")
 
@@ -7,7 +9,11 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "TimeTrac
 struct SettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
+    @Injected(\.calendarService) private var calendarService
     @State private var showingPrefixPicker = false
+    @State private var isAccessRequestDeclined = false
     
     @AppStorage("calendarPrefix") var calendarPrefix: String = "⏱️"
     @AppStorage("selectedTheme") private var selectedTheme: Theme = .system
@@ -38,6 +44,32 @@ struct SettingsView: View {
                     .foregroundColor(.blue)
                 }
             }
+            
+            Section(
+                header: Text("Доступ к календарю"),
+                footer: Text(calendarAccessFooter)
+            ) {
+                HStack {
+                    Text("Текущий доступ")
+                    Spacer()
+                    Text(calendarAccessTitle)
+                        .foregroundColor(.secondary)
+                }
+                
+                if canChangeCalendarAccess {
+                    if opensSystemSettings {
+                        Button("Открыть настройки iOS") {
+                            openSystemSettings()
+                        }
+                    } else {
+                        Button("Запросить полный доступ") {
+                            Task {
+                                isAccessRequestDeclined = await !calendarService.requestFullAccess()
+                            }
+                        }
+                    }
+                }
+            }
         }
         .navigationTitle("Настройки")
         .navigationBarTitleDisplayMode(.inline)
@@ -52,6 +84,64 @@ struct SettingsView: View {
             PrefixPickerView(selectedPrefix: $calendarPrefix)
         }
         .alert(item: $alert) { $0.asAlert }
+        .onAppear {
+            calendarService.refreshAuthorizationStatus()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                calendarService.refreshAuthorizationStatus()
+            }
+        }
+    }
+    
+    private var canChangeCalendarAccess: Bool {
+        switch calendarService.authorizationStatus {
+        case .fullAccess, .authorized, .restricted:
+            return false
+        default:
+            return true
+        }
+    }
+    
+    // iOS показывает системный запрос только один раз: после отказа доступ меняется в настройках iOS
+    private var opensSystemSettings: Bool {
+        calendarService.authorizationStatus == .denied || isAccessRequestDeclined
+    }
+    
+    private var calendarAccessTitle: String {
+        switch calendarService.authorizationStatus {
+        case .fullAccess, .authorized:
+            return "Полный"
+        case .writeOnly:
+            return "Только запись"
+        case .denied:
+            return "Запрещён"
+        case .restricted:
+            return "Ограничен"
+        case .notDetermined:
+            return "Не запрошен"
+        @unknown default:
+            return "Неизвестно"
+        }
+    }
+    
+    private var calendarAccessFooter: String {
+        switch calendarService.authorizationStatus {
+        case .fullAccess, .authorized:
+            return "Приложение может создавать события и читать их для статистики"
+        case .restricted:
+            return "Доступ ограничен на этом устройстве, например, родительским контролем"
+        default:
+            if opensSystemSettings {
+                return "Повторный запрос iOS не показывает. Откройте настройки iOS и выберите «Календари» → «Полный доступ»"
+            }
+            return "Полный доступ нужен, чтобы читать события и формировать статистику"
+        }
+    }
+    
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        openURL(url)
     }
 }
 
